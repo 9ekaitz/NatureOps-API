@@ -4,7 +4,7 @@ import java.util.List;
 
 import eus.natureops.natureops.domain.Role;
 
-public interface RolService {
+public interface RoleService {
 
   public Role save(Role role);
 

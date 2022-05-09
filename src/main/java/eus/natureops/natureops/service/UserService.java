@@ -7,4 +7,5 @@ public interface UserService {
   public User save(User user);
   public User findByUsername(String username);
   public User disable(User user);
+  public User setRole(String username, String name);
 }

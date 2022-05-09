@@ -7,16 +7,18 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Generated;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Data @Generated
+@Data @Generated @AllArgsConstructor @NoArgsConstructor
 public class User {
   
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
+  private long id;
   
   private String username;
   private String password;

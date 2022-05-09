@@ -6,11 +6,16 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@Configuration
-@EnableWebSecurity
+import eus.natureops.natureops.filter.AuthenticationFilter;
+import eus.natureops.natureops.filter.AuthorizationFilter;
+import eus.natureops.natureops.utils.JWTUtil;
+
+@Configuration @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
   @Autowired
@@ -19,6 +24,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  @Autowired
+  private JWTUtil jwtUtil;
+
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
     auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
@@ -26,8 +34,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    // TODO Auto-generated method stub
-    super.configure(http);
+    AuthenticationFilter authenticationFilter = new AuthenticationFilter(this.authenticationManagerBean(), jwtUtil);
+    authenticationFilter.setFilterProcessesUrl("/api/login");
+    http.csrf().disable();
+    http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    http.authorizeRequests().antMatchers("/login", "/api/token/refresh").permitAll();
+    http.authorizeRequests().antMatchers("/api/get/**").hasAnyAuthority("ROLE_USER");
+    http.authorizeRequests().anyRequest().authenticated();
+    http.addFilter(authenticationFilter);
+    http.addFilterBefore(new AuthorizationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
   }
-  
 }
