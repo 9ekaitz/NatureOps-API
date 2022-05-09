@@ -6,7 +6,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '----- Build app -----'
-                withMaven (maven: 'M3') {
+                withMaven (maven: 'Maven') {
                     withCredentials([]) {
                         sh 'mvn clean compile'
                     }
