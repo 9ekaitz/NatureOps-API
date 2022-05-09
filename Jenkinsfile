@@ -29,7 +29,7 @@ pipeline {
         // }
         stage('Static Analysis') {
             steps {
-                withMaven(maven: 'M3') {
+                withMaven(maven: 'Maven') {
                     withSonarQubeEnv(installationName:'Sonarqube-NatureOps', credentialsId: 'sonar-token') {
                         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                                             sh 'mvn sonar:sonar \
