@@ -23,13 +23,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     boolean disabled = !user.isEnabled();
 
-    UserDetails userDetails = org.springframework.security.core.userdetails.User
+    return org.springframework.security.core.userdetails.User
     .withUsername(username)
     .password(user.getPassword())
     .disabled(disabled)
     .authorities(user.getRole().getName())
     .build();
-
-    return userDetails;
   }
 }

@@ -18,10 +18,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class JWTUtil implements Serializable {
 
-    //FIXME: Subsitute the secret with a proper encrypted secret
     @Value("${natureops.security.jwt.secret}")
-    private String SECRET_KEY;
-    private String ISSUER = "natureops.eus";
+    private String secretKey;
+    private String issuer = "natureops.eus";
 
     public String generateToken(UserDetails userDetails) {
         List<String> claims = new ArrayList<>();
@@ -35,20 +34,20 @@ public class JWTUtil implements Serializable {
     private String createToken(List<String> claims, String subject) {
         return JWT.create().withSubject(subject)
                     .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60))
-                    .withIssuer(ISSUER)
+                    .withIssuer(issuer)
                     .withClaim("roles", claims)
-                    .sign(Algorithm.HMAC256(SECRET_KEY));
+                    .sign(Algorithm.HMAC256(secretKey));
     }
 
     private String createRefreshToken(String subject) {
       return JWT.create().withSubject(subject)
                   .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                  .withIssuer(ISSUER)
-                  .sign(Algorithm.HMAC256(SECRET_KEY));
+                  .withIssuer(issuer)
+                  .sign(Algorithm.HMAC256(secretKey));
   }
 
     public DecodedJWT verifyToken(String token) {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build();
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secretKey)).build();
         return verifier.verify(token);
     }
 }
