@@ -20,9 +20,9 @@ public class NatureopsApplication {
 	}
 
 	@Bean
-  PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
 	@Bean
 	CommandLineRunner run(UserService userService, RoleService roleService) {
@@ -31,7 +31,7 @@ public class NatureopsApplication {
 			roleService.save(new Role(2L, "ROLE_ONG", true, 1));
 			roleService.save(new Role(3L, "ROLE_PO", true, 1));
 
-			userService.register(new User(1L, "eka", "123", "Eka", "User", null, true, null, 1));
+			userService.register(new User(1L, "eka", "123", "Eka", "User", "ekaitz@email.com", null, true, null, 1));
 			userService.setRole("eka", "ROLE_USER");
 		};
 	}

@@ -2,6 +2,13 @@ spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/natureops
+    username: root
+    password: ENC(Lu6B1KV6j12BbCqcrabNdioAUDl3iDCoYEDRAcb0rkEbBe5YzHKfMg==)
   jpa:
     hibernate: 
       ddl-auto: update
+
+natureops:
+  security:
+    jwt:
+      secret: ENC(67RHxgam19fOqPEYI3cyq9n4nSqXuOTGD9t+q5H0/FCTiJ9j5QNsxw==)

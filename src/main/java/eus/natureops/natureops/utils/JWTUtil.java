@@ -10,6 +10,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,8 @@ import org.springframework.stereotype.Service;
 public class JWTUtil implements Serializable {
 
     //FIXME: Subsitute the secret with a proper encrypted secret
-    private String SECRET_KEY = "secret";
+    @Value("${natureops.security.jwt.secret}")
+    private String SECRET_KEY;
     private String ISSUER = "natureops.eus";
 
     public String generateToken(UserDetails userDetails) {
