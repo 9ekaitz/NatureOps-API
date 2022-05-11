@@ -18,10 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.domain.User;
+import eus.natureops.natureops.form.ImageSubmit;
 import eus.natureops.natureops.service.UserService;
 import eus.natureops.natureops.utils.JWTUtil;
 
@@ -74,6 +76,11 @@ public class UserResource {
     } else {
       throw new RuntimeException("Refresh token is missing");
     }
+  }
+
+  @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+  public void submitImage(HttpServletRequest request, HttpServletResponse response, ImageSubmit imageSubmit) {
+      System.out.println(imageSubmit.getLocation());
   }
 
   public String getAll() {

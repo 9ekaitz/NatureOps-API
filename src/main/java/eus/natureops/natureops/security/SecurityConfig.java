@@ -37,6 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     AuthenticationFilter authenticationFilter = new AuthenticationFilter(this.authenticationManagerBean(), jwtUtil);
     authenticationFilter.setFilterProcessesUrl("/api/login");
     http.csrf().disable();
+    http.cors();
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     http.authorizeRequests().antMatchers("/login", "/api/token/refresh").permitAll();
     http.authorizeRequests().antMatchers("/api/get/**").hasAnyAuthority("ROLE_USER");

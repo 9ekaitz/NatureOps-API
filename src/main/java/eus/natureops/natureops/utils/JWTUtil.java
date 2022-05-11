@@ -24,6 +24,8 @@ public class JWTUtil implements Serializable {
 
     public String generateToken(UserDetails userDetails) {
         List<String> claims = new ArrayList<>();
+        userDetails.getAuthorities().forEach((a) -> {claims.add(a.getAuthority());});
+
         return createToken(claims, userDetails.getUsername());
     }
 

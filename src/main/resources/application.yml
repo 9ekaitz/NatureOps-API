@@ -3,7 +3,7 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/natureops
     username: root
-    password: ENC(Lu6B1KV6j12BbCqcrabNdioAUDl3iDCoYEDRAcb0rkEbBe5YzHKfMg==)
+    password: ENC(wLckfiOJRaeMR27l9/0Lf+zwCYrdQwYOJDIY7/uF1kPGh87t3jiZcXKl2t2HLWgUxFgG2st+1S+AHPKikGkFXg==)
   jpa:
     hibernate: 
       ddl-auto: update
@@ -11,4 +11,4 @@ spring:
 natureops:
   security:
     jwt:
-      secret: ENC(67RHxgam19fOqPEYI3cyq9n4nSqXuOTGD9t+q5H0/FCTiJ9j5QNsxw==)
+      secret: ENC(LIfRiysPah85khqUHZDZHralfzCH9B/2/0BEZenfMXhuw2FHucd/gUqT6gJrhJLn1V97ho9zCjroAznTb4LfVA==)
