@@ -1,10 +1,8 @@
 package eus.natureops.natureops.utils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.auth0.jwt.JWT;
