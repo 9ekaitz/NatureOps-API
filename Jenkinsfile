@@ -16,9 +16,7 @@ pipeline {
             steps {
                 echo '----- Test app -----'
                 withMaven (maven: 'Maven') {
-                    withCredentials() {
                         sh 'mvn test -Dspring.profiles.active=ci'
-                    }
                 }
             }
         }
