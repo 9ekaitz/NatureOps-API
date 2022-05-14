@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
     
     stages {
@@ -13,20 +12,16 @@ pipeline {
                 }
             }
         }
-        // stage('Unit Testing') {
-        //     steps {
-        //         echo '----- Test app -----'
-        //         withMaven (maven: 'M3') {
-        //             // withCredentials([string(credentialsId: 'jasypt-secret', variable: 'JASYPT')]) {
-        //             withCredentials() {
-        //                 sh 'mvn test -Dspring.profiles.active=ci \
-        //                     -Djasypt.encryptor.password=${JASYPT}'
-        //                 // sh 'mvn test -Dspring.profiles.active=ci \
-        //                 // -Djasypt.encryptor.password=${JASYPT}'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Testing') {
+            steps {
+                echo '----- Test app -----'
+                withMaven (maven: 'Maven') {
+                    withCredentials() {
+                        sh 'mvn test -Dspring.profiles.active=ci'
+                    }
+                }
+            }
+        }
         stage('Static Analysis') {
             steps {
                 withMaven(maven: 'Maven') {

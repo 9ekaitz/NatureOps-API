@@ -21,6 +21,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import eus.natureops.natureops.utils.JWTUtil;
 
+
+/**
+* AuthenticationFilter is the filter that handles the user authentication in the first place 
+* and generates a JWT one the authetication is successful.
+* @author 9ekaitz
+* 
+*/
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
   private JWTUtil jwtUtil;
@@ -31,6 +38,10 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter{
     this.jwtUtil = jwtUtil;
   }
 
+  /**
+   * Reads the username and the passowrd from the request as form data and uses them
+   *  to create a {@link UsernamePasswordAuthenticationToken}.
+   */
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
       throws AuthenticationException {
@@ -42,6 +53,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter{
     return authenticationManager.authenticate(authenticationToken);
   }
 
+  /**
+   * When the authentication has been successful it generates the access and refresh token 
+   * using {@link JWTUtil#generateToken(UserDetails)} and {@link JWTUtil#generateRefreshToken(UserDetails)} 
+   * mehtods and sends them back to the user. 
+   */
   @Override
   protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
       Authentication authentication) throws IOException, ServletException {

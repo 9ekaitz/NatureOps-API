@@ -12,3 +12,4 @@ natureops:
   security:
     jwt:
       secret: ENC(LIfRiysPah85khqUHZDZHralfzCH9B/2/0BEZenfMXhuw2FHucd/gUqT6gJrhJLn1V97ho9zCjroAznTb4LfVA==)
+      issuer: natureops.eus
