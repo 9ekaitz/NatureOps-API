@@ -36,7 +36,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    if (request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/token/refresh"))
+    if (request.getRequestURI().equals("/api/login") || request.getRequestURI().equals("/api/token/refresh"))
       filterChain.doFilter(request, response);
     else {
       String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -46,19 +46,20 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
           DecodedJWT decodedJWT = jwtUtil.verifyToken(token);
 
-          String username = decodedJWT.getSignature();
+          String username = decodedJWT.getSubject();
           String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
           Collection<SimpleGrantedAuthority> authorities = Arrays.stream(roles)
               .map(SimpleGrantedAuthority::new)
               .collect(Collectors.toList());
 
-          SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, null, authorities));
+          SecurityContextHolder.getContext()
+              .setAuthentication(new UsernamePasswordAuthenticationToken(username, null, authorities));
 
           filterChain.doFilter(request, response);
         } catch (Exception e) {
           Map<String, String> error = new HashMap<>();
           error.put("error_message", e.getMessage());
-          
+
           response.setStatus(HttpStatus.FORBIDDEN.value());
           response.setContentType(MediaType.APPLICATION_JSON_VALUE);
           new ObjectMapper().writeValue(response.getOutputStream(), error);

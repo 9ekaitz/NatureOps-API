@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
     
     stages {
@@ -13,20 +12,14 @@ pipeline {
                 }
             }
         }
-        // stage('Unit Testing') {
-        //     steps {
-        //         echo '----- Test app -----'
-        //         withMaven (maven: 'M3') {
-        //             // withCredentials([string(credentialsId: 'jasypt-secret', variable: 'JASYPT')]) {
-        //             withCredentials() {
-        //                 sh 'mvn test -Dspring.profiles.active=ci \
-        //                     -Djasypt.encryptor.password=${JASYPT}'
-        //                 // sh 'mvn test -Dspring.profiles.active=ci \
-        //                 // -Djasypt.encryptor.password=${JASYPT}'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Testing') {
+            steps {
+                echo '----- Test app -----'
+                withMaven (maven: 'Maven') {
+                        sh 'mvn test'
+                }
+            }
+        }
         stage('Static Analysis') {
             steps {
                 withMaven(maven: 'Maven') {
@@ -47,7 +40,7 @@ pipeline {
         stage('QualityGate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token'
+                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-webhook'
                 }
             }
         }
