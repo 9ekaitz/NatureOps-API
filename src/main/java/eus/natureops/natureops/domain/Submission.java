@@ -2,7 +2,11 @@ package eus.natureops.natureops.domain;
 
 import java.util.Date;
 
-public class Image {
+import lombok.Data;
+import lombok.Generated;
+
+@Data @Generated
+public class Submission {
   private int id;
   private String score;
   private Date date;

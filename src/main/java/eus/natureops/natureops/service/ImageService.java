@@ -2,12 +2,12 @@ package eus.natureops.natureops.service;
 
 import java.util.List;
 
-import eus.natureops.natureops.domain.Image;
+import eus.natureops.natureops.domain.Submission;
 
 public interface ImageService {
-  public Image save(Image image);
+  public Submission save(Submission image);
 
-  public List<Image> findAll();
+  public List<Submission> findAll();
 
-  public Image findById(Long id);
+  public Submission findById(Long id);
 }
