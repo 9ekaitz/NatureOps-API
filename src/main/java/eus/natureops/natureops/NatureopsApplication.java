@@ -1,5 +1,8 @@
 package eus.natureops.natureops;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,8 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import eus.natureops.natureops.domain.Event;
 import eus.natureops.natureops.domain.Role;
 import eus.natureops.natureops.domain.User;
+import eus.natureops.natureops.service.EventService;
 import eus.natureops.natureops.service.RoleService;
 import eus.natureops.natureops.service.UserService;
 
@@ -37,14 +42,16 @@ public class NatureopsApplication {
 	}
 
 	@Bean
-	CommandLineRunner run(UserService userService, RoleService roleService) {
+	CommandLineRunner run(UserService userService, RoleService roleService, EventService eventService) {
 		return args -> {
 			roleService.save(new Role(1L, "ROLE_USER", true, 1));
 			roleService.save(new Role(2L, "ROLE_ONG", true, 1));
 			roleService.save(new Role(3L, "ROLE_PO", true, 1));
 
-			userService.register(new User(1L, "eka", "123", "Eka", "User", "ekaitz@email.com", null, true, null, 1));
+			userService.register(new User(1L, "eka", "123", "Eka", "User", "ekaitz@email.com", null, true, null,  new HashSet<Event>(), 1));
 			userService.setRole("eka", "ROLE_USER");
+
+			eventService.save(new Event(1L, "evento", null, null, "Location", "description", true, new HashSet<User>(), null, 1));
 		};
 	}
 }
