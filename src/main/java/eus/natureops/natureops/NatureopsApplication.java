@@ -36,15 +36,18 @@ public class NatureopsApplication {
 		};
 	}
 
-	@Bean
-	CommandLineRunner run(UserService userService, RoleService roleService) {
-		return args -> {
-			roleService.save(new Role(1L, "ROLE_USER", true, 1));
-			roleService.save(new Role(2L, "ROLE_ONG", true, 1));
-			roleService.save(new Role(3L, "ROLE_PO", true, 1));
+	// @Bean
+	// public Schema
 
-			userService.register(new User(1L, "eka", "123", "Eka", "User", "ekaitz@email.com", null, true, null, 1));
-			userService.setRole("eka", "ROLE_USER");
-		};
-	}
+	// @Bean
+	// CommandLineRunner run(UserService userService, RoleService roleService) {
+	// 	return args -> {
+	// 		roleService.save(new Role(1L, "ROLE_USER", true, 1));
+	// 		roleService.save(new Role(2L, "ROLE_ONG", true, 1));
+	// 		roleService.save(new Role(3L, "ROLE_PO", true, 1));
+
+	// 		userService.register(new User(1L, "eka", "123", "Eka", "User", "ekaitz@email.com", null, true, null, 1));
+	// 		userService.setRole("eka", "ROLE_USER");
+	// 	};
+	// }
 }
