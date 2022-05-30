@@ -47,7 +47,7 @@ public class UserResource {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<Object> register(@RequestBody User user) {
+  public ResponseEntity<?> register(@RequestBody User user) {
     try {
       User createdUser = userService.register(user);
     } catch (Exception e) {
@@ -57,7 +57,19 @@ public class UserResource {
           "User already exists", new HttpHeaders(), HttpStatus.FORBIDDEN);
 
     }
-    return ResponseEntity.ok().build();
+
+    Map<String, String> tokens = new HashMap<>();
+
+    UserDetails newUserDeatils = userDetailsService.loadUserByUsername(user.getUsername());
+
+    String accessToken = jwtUtil.generateToken(newUserDeatils);
+    String refreshToken = jwtUtil.generateRefreshToken(newUserDeatils);
+
+    tokens.put("access_token", accessToken);
+    tokens.put("refresh_token", accessToken);
+
+    return new ResponseEntity<Object>(
+        tokens, HttpStatus.CREATED);
   }
 
   /**
