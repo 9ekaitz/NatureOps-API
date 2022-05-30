@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.domain.User;
+import eus.natureops.natureops.exceptions.UserExistsException;
 import eus.natureops.natureops.form.ImageSubmit;
 import eus.natureops.natureops.service.UserService;
 import eus.natureops.natureops.utils.JWTUtil;
@@ -51,11 +52,7 @@ public class UserResource {
     try {
       User createdUser = userService.register(user);
     } catch (Exception e) {
-      Map<String, String> map = new HashMap<>();
-      map.put("error", "User alredy exists");
-      return new ResponseEntity<Object>(
-          "User already exists", new HttpHeaders(), HttpStatus.FORBIDDEN);
-
+      throw new UserExistsException();      
     }
 
     Map<String, String> tokens = new HashMap<>();

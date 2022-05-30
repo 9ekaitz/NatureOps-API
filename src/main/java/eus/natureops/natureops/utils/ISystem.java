@@ -1,7 +1,6 @@
 package eus.natureops.natureops.utils;
 
-public abstract class ISystem {
-  
+public interface ISystem {
   public static long currentTimeMillis(){
     return System.currentTimeMillis();
   }
