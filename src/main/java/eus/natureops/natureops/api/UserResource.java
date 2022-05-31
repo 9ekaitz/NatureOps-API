@@ -49,21 +49,22 @@ public class UserResource {
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody User user) {
+    User createdUser;
     try {
-      User createdUser = userService.register(user);
+      createdUser = userService.register(user);
     } catch (Exception e) {
       throw new UserExistsException();      
     }
 
     Map<String, String> tokens = new HashMap<>();
 
-    UserDetails newUserDeatils = userDetailsService.loadUserByUsername(user.getUsername());
+    UserDetails newUserDeatils = userDetailsService.loadUserByUsername(createdUser.getUsername());
 
     String accessToken = jwtUtil.generateToken(newUserDeatils);
     String refreshToken = jwtUtil.generateRefreshToken(newUserDeatils);
 
     tokens.put("access_token", accessToken);
-    tokens.put("refresh_token", accessToken);
+    tokens.put("refresh_token", refreshToken);
 
     return new ResponseEntity<Object>(
         tokens, HttpStatus.CREATED);
