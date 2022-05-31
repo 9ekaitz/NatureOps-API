@@ -11,10 +11,12 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,8 +46,8 @@ public class UserResource {
   private UserDetailsService userDetailsService;
 
   @GetMapping("/get")
-  public ResponseEntity<UserView> get() {
-    return ResponseEntity.ok().body(userService.loadView("eka"));
+  public ResponseEntity<UserView> get(Authentication auth) {
+    return ResponseEntity.ok().body(userService.loadView(auth.getUsername()));
   }
 
   @PostMapping("/register")
