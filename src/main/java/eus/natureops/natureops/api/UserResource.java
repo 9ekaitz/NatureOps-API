@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.domain.User;
+import eus.natureops.natureops.dto.UserView;
 import eus.natureops.natureops.exceptions.UserExistsException;
 import eus.natureops.natureops.form.ImageSubmit;
 import eus.natureops.natureops.service.UserService;
@@ -43,8 +44,8 @@ public class UserResource {
   private UserDetailsService userDetailsService;
 
   @GetMapping("/get")
-  public ResponseEntity<User> get() {
-    return ResponseEntity.ok().body(userService.findByUsername("eka"));
+  public ResponseEntity<UserView> get() {
+    return ResponseEntity.ok().body(userService.loadView("eka"));
   }
 
   @PostMapping("/register")
