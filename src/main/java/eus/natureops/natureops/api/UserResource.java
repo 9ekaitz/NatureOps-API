@@ -1,5 +1,6 @@
 package eus.natureops.natureops.api;
 
+import java.io.Console;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,11 +12,11 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -47,7 +48,7 @@ public class UserResource {
 
   @GetMapping("/get")
   public ResponseEntity<UserView> get(Authentication auth) {
-    return ResponseEntity.ok().body(userService.loadView(auth.getUsername()));
+    return ResponseEntity.ok().body(userService.loadView(auth.getName()));
   }
 
   @PostMapping("/register")
@@ -71,6 +72,33 @@ public class UserResource {
 
     return new ResponseEntity<Object>(
         tokens, HttpStatus.CREATED);
+  }
+
+  @PostMapping("/update")
+  public ResponseEntity<?> update(@RequestBody UserView userView, Authentication auth) {
+    User createdUser;
+    try {
+      createdUser = userService.findByUsername(auth.getName());
+      createdUser.setUsername(userView.getUsername());
+      createdUser.setName(userView.getName());
+      createdUser.setEmail(userView.getEmail());
+      userService.save(createdUser);
+    } catch (Exception e) {
+      throw new UserExistsException();      
+    }
+
+    Map<String, String> tokens = new HashMap<>();
+
+    UserDetails newUserDeatils = userDetailsService.loadUserByUsername(createdUser.getUsername());
+
+    String accessToken = jwtUtil.generateToken(newUserDeatils);
+    String refreshToken = jwtUtil.generateRefreshToken(newUserDeatils);
+
+    tokens.put("access_token", accessToken);
+    tokens.put("refresh_token", refreshToken);
+
+    return new ResponseEntity<Object>(
+        tokens, HttpStatus.OK);
   }
 
   /**

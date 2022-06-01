@@ -16,6 +16,6 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
   public ResponseEntity<Object> handleAccessDeniedException(
       Exception ex) {
     return new ResponseEntity<>(
-        ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
+      ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT);
   }
 }
