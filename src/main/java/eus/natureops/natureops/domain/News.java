@@ -1,5 +1,6 @@
 package eus.natureops.natureops.domain;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,9 +18,20 @@ public class News {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
+
+  @Column(nullable = false)
   private String title;
+
+  @Column
+  private String subtitle;
+
+  @Column
   private String content;
+
+  @Column
   private String image;
+
+  @Column
   private boolean enabled;
 
   @Version
