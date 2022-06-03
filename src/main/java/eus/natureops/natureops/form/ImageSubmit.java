@@ -10,5 +10,5 @@ public class ImageSubmit {
 
   private MultipartFile image;
   private String location;
-  private String username;
+  private String size;
 }

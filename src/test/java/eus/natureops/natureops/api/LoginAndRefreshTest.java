@@ -121,6 +121,7 @@ class LoginAndRefreshTest {
   void testRefreshToken() throws Exception {
     String refreshToken = createRefreshtoken(1000 * 60 * 60 * 24, createHash("RANDOM"));
 
+    String refreshToken = createRefreshtoken(1000 * 60 * 60 * 24);
     when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
     when(jwtUtil.verifyToken(refreshToken)).then(new Answer<DecodedJWT>() {
       @Override
