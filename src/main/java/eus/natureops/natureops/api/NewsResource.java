@@ -2,6 +2,8 @@ package eus.natureops.natureops.api;
 
 import java.util.List;
 
+import javax.persistence.criteria.CriteriaBuilder.In;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +28,14 @@ public class NewsResource {
 
     return  ResponseEntity.ok().body(newsService.findAll(page,size));
   }
+
+
+  @GetMapping("/news/size" )
+  public ResponseEntity<Integer> getSize() {
+
+    return  ResponseEntity.ok().body(newsService.getNewsSize());
+  }
+
 
   public String save(News news) {
     return "";
