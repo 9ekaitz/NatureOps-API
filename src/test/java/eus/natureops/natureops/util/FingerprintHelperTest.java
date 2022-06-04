@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -41,7 +42,7 @@ class FingerprintHelperTest {
   @Test
   void hashFingerprintTest() throws NoSuchAlgorithmException, UnsupportedEncodingException {
     MessageDigest digest = MessageDigest.getInstance("SHA-256");
-    byte[] userFingerprintDigest = digest.digest("RANDOM".getBytes("utf-8"));
+    byte[] userFingerprintDigest = digest.digest("RANDOM".getBytes(StandardCharsets.UTF_8));
     String hash = DatatypeConverter.printHexBinary(userFingerprintDigest);
     assertEquals(hash, fingerprintHelper.hashFingerprint("RANDOM"));
   }
@@ -49,7 +50,7 @@ class FingerprintHelperTest {
   @Test
   void verifyFingerprintNotMatchingTest() throws NoSuchAlgorithmException, UnsupportedEncodingException {
     MessageDigest digest = MessageDigest.getInstance("SHA-256");
-    byte[] userFingerprintDigest = digest.digest("RANDOM".getBytes("utf-8"));
+    byte[] userFingerprintDigest = digest.digest("RANDOM".getBytes(StandardCharsets.UTF_8));
     String hash = DatatypeConverter.printHexBinary(userFingerprintDigest);
     assertThrowsExactly(FingerprintVerificationException.class, () -> fingerprintHelper.verifyFingerprint(hash, "NOT_RANDOM"));
   }
