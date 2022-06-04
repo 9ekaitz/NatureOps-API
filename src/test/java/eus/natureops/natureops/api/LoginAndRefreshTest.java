@@ -85,7 +85,6 @@ class LoginAndRefreshTest {
     dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()),
         Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
     digest = MessageDigest.getInstance("SHA-256");
-    // jwtToken = jwtUtil.generateToken(dummy);
   }
 
   @Test

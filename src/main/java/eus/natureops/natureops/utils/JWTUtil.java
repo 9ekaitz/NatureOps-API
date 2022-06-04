@@ -119,7 +119,7 @@ public class JWTUtil implements Serializable {
    * @param token The token as a String
    * @return A {@link DecodedJWT} object with the token
    */
-  public DecodedJWT verifyToken(/*Token*/ String token) {
+  public DecodedJWT verifyToken(String token) {
     JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secretKey)).build();
     return verifier.verify(token);
   }
