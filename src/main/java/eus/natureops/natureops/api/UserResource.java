@@ -1,15 +1,16 @@
 package eus.natureops.natureops.api;
 
-import java.io.Console;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,11 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.UserView;
 import eus.natureops.natureops.exceptions.UserExistsException;
-import eus.natureops.natureops.form.ImageSubmit;
+import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
 import eus.natureops.natureops.service.UserService;
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.JWTUtil;
 
 @RestController
@@ -39,6 +43,9 @@ public class UserResource {
 
   @Autowired
   private JWTUtil jwtUtil;
+
+  @Autowired
+  private FingerprintHelper fingerprintHelper;
 
   @Autowired
   private UserService userService;
@@ -117,15 +124,31 @@ public class UserResource {
   @GetMapping("/token/refresh")
   public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+    String userFingerprint = null;
+    if (request.getCookies() != null && request.getCookies().length > 0) {
+      List<Cookie> cookies = Arrays.stream(request.getCookies()).collect(Collectors.toList());
+      Optional<Cookie> cookie = cookies.stream().filter(c -> "Fgp"
+          .equals(c.getName())).findFirst();
+      if (cookie.isPresent()) {
+        userFingerprint = cookie.get().getValue();
+      }
+    }
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       try {
+        if (userFingerprint == null)
+          throw new RuntimeException("Fingerprint cookie is missing");
+
         String refreshToken = authorizationHeader.substring("Bearer ".length());
         DecodedJWT decodedJWT = jwtUtil.verifyToken(refreshToken);
+
+        String hashFgp = decodedJWT.getClaim("fingerprint").asString();
+        fingerprintHelper.verifyFingerprint(hashFgp, userFingerprint);
 
         String username = decodedJWT.getSubject();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        String accessToken = jwtUtil.generateToken(userDetails);
+        String accessToken = jwtUtil.generateToken(userDetails, hashFgp);
 
         Map<String, String> tokens = new HashMap<>();
         tokens.put("access_token", accessToken);
@@ -143,24 +166,7 @@ public class UserResource {
         new ObjectMapper().writeValue(response.getOutputStream(), error);
       }
     } else {
-      throw new RuntimeException("Refresh token is missing");
+      throw new RefreshTokenMissingException();
     }
-  }
-
-  @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-  public void submitImage(HttpServletRequest request, HttpServletResponse response, ImageSubmit imageSubmit) {
-    System.out.println(imageSubmit.getLocation());
-  }
-
-  public String getAll() {
-    return "";
-  }
-
-  public String auth(String username, String password) {
-    return "";
-  }
-
-  public String save(User user) {
-    return "";
   }
 }

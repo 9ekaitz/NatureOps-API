@@ -1,14 +1,21 @@
 package eus.natureops.natureops.api;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.Cookie;
+import javax.xml.bind.DatatypeConverter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -19,6 +26,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +44,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
 import eus.natureops.natureops.service.RoleService;
 import eus.natureops.natureops.service.UserService;
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
 
@@ -55,6 +65,9 @@ class LoginAndRefreshTest {
   JWTUtil jwtUtil;
 
   @MockBean
+  FingerprintHelper fingerprintHelper;
+
+  @MockBean
   UserService userService;
 
   @MockBean
@@ -65,10 +78,13 @@ class LoginAndRefreshTest {
 
   static UserDetails dummy;
 
+  static MessageDigest digest;
+
   @BeforeAll
-  public static void setUp() {
-    dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()), Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-    // jwtToken = jwtUtil.generateToken(dummy);
+  public static void setUp() throws NoSuchAlgorithmException {
+    dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()),
+        Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+    digest = MessageDigest.getInstance("SHA-256");
   }
 
   @Test
@@ -103,8 +119,7 @@ class LoginAndRefreshTest {
 
   @Test
   void testRefreshToken() throws Exception {
-    String refreshToken = createRefreshtoken(1000 * 60 * 60 * 24);
-    DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(SECRET)).build().verify(refreshToken);
+    String refreshToken = createRefreshtoken(1000 * 60 * 60 * 24, createHash("RANDOM"));
 
     when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
     when(jwtUtil.verifyToken(refreshToken)).then(new Answer<DecodedJWT>() {
@@ -114,10 +129,15 @@ class LoginAndRefreshTest {
         return verifier.verify(refreshToken);
       }
     });
+
+    Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"), "RANDOM");
+
     when(jwtUtil.generateToken(dummy)).thenReturn(createAccesstoken(1000 * 60));
 
+    Cookie cookie = new Cookie("Fgp", "SECRET");
     MvcResult result = mvc.perform(get("http://localhost:8080/api/token/refresh")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken)
+        .cookie(cookie))
         .andExpect(status().isOk())
         .andReturn();
 
@@ -131,7 +151,7 @@ class LoginAndRefreshTest {
 
   @Test
   void testRefreshTokenExpired() throws Exception {
-    String refreshToken = createRefreshtoken(-1000 * 60 * 60 * 24);
+    String refreshToken = createRefreshtoken(-1000 * 60 * 60 * 24, createHash("RANDOM"));
 
     when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
     when(jwtUtil.verifyToken(refreshToken)).then(new Answer<DecodedJWT>() {
@@ -141,8 +161,12 @@ class LoginAndRefreshTest {
         return verifier.verify(refreshToken);
       }
     });
+    Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"), "RANDOM");
+
+    Cookie cookie = new Cookie("Fgp", "SECRET");
     MvcResult result = mvc.perform(get("http://localhost:8080/api/token/refresh")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken)
+        .cookie(cookie))
         .andExpect(status().isForbidden())
         .andReturn();
 
@@ -153,16 +177,55 @@ class LoginAndRefreshTest {
   }
 
   @Test
-  void testAuthorizationWithoutToken() throws Exception {
-    String refreshToken = createRefreshtoken(-1000 * 60 * 60 * 24);
+  void testRefreshTokenWithoutToken() throws Exception {
+    String refreshToken = createRefreshtoken(-1000 * 60 * 60 * 24, createHash("RANDOM"));
 
-    mvc.perform(get("http://localhost:8080/api/get"))
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(refreshToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(refreshToken);
+      }
+    });
+    Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"), "RANDOM");
+
+    Cookie cookie = new Cookie("Fgp", "SECRET");
+    mvc.perform(get("http://localhost:8080/api/token/refresh")
+        .cookie(cookie))
+        .andExpect(status().isForbidden())
+        .andExpect(result -> assertTrue(result.getResolvedException() instanceof RefreshTokenMissingException));
+  }
+
+  @Test
+  void testAuthorizationWithoutToken() throws Exception {
+    Cookie cookie = new Cookie("Fgp", "SECRET");
+
+    mvc.perform(get("http://localhost:8080/api/get")
+        .cookie(cookie))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void testAuthorizationWithoutFingerprint() throws Exception {
+    String refreshToken = createRefreshtoken(-1000 * 60 * 60 * 24, createHash("RANDOM"));
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(refreshToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(refreshToken);
+      }
+    });
+
+    mvc.perform(get("http://localhost:8080/api/get")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + refreshToken))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void testAuthorizationExpiredToken() throws Exception {
-    String accessToken = createAccesstoken(-1000 * 60);
+    String accessToken = createAccesstoken(-1000 * 60, createHash("RANDOM"));
 
     when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
     when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
@@ -172,8 +235,12 @@ class LoginAndRefreshTest {
         return verifier.verify(accessToken);
       }
     });
+    Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"), "RANDOM");
+
+    Cookie cookie = new Cookie("Fgp", "SECRET");
     MvcResult result = mvc.perform(get("http://localhost:8080/api/get")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
         .andExpect(status().isForbidden())
         .andReturn();
 
@@ -185,7 +252,7 @@ class LoginAndRefreshTest {
 
   @Test
   void testAuthorization() throws Exception {
-    String accessToken = createAccesstoken(+1000 * 60);
+    String accessToken = createAccesstoken(+1000 * 60, createHash("RANDOM"));
 
     when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
     when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
@@ -195,15 +262,20 @@ class LoginAndRefreshTest {
         return verifier.verify(accessToken);
       }
     });
+    Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"), "RANDOM");
+
+    Cookie cookie = new Cookie("Fgp", "SECRET");
     mvc.perform(get("http://localhost:8080/api/get")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
         .andExpect(status().isOk());
   }
 
-  private String createRefreshtoken(int delta) {
+  private String createRefreshtoken(int delta, String fingerprint) {
     return JWT.create().withSubject("eka")
         .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
         .withIssuer("natureops.eus")
+        .withClaim("fingerprint", fingerprint)
         .sign(Algorithm.HMAC256(SECRET));
   }
 
@@ -214,5 +286,20 @@ class LoginAndRefreshTest {
         .withClaim("roles", dummy.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
         .sign(Algorithm.HMAC256(SECRET));
+  }
+
+  private String createAccesstoken(int delta, String fingerprint) {
+    return JWT.create().withSubject(dummy.getUsername())
+        .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
+        .withIssuer("natureops.eus")
+        .withClaim("roles", dummy.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+        .withClaim("fingerprint", fingerprint)
+        .sign(Algorithm.HMAC256(SECRET));
+  }
+
+  private String createHash(String fgp) throws UnsupportedEncodingException {
+    byte[] userFingerprintDigest = digest.digest(fgp.getBytes("utf-8"));
+    return DatatypeConverter.printHexBinary(userFingerprintDigest);
   }
 }
