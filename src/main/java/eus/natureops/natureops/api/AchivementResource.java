@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,9 +24,14 @@ public class AchivementResource {
     return "";
   }
   
-  @GetMapping("/achivements")
-  public  ResponseEntity<List<Achivement>> getAll() {
-    return ResponseEntity.ok().body(achivementService.findAll());
+  @GetMapping("/achivements/{page}/{size}")
+  public  ResponseEntity<List<Achivement>> getAll(@PathVariable(name = "page") int page, @PathVariable(name = "size") int size) {
+    return ResponseEntity.ok().body(achivementService.findAll(page, size));
+  }
+
+  @GetMapping("/achivements/size")
+  public  ResponseEntity<Integer> size() {
+    return ResponseEntity.ok().body(achivementService.achievementsSize());
   }
 
   public String save(Achivement achivement) {
