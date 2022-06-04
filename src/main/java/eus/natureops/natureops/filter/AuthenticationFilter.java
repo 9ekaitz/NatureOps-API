@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,6 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.JWTUtil;
 
 
@@ -31,11 +33,13 @@ import eus.natureops.natureops.utils.JWTUtil;
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
   private JWTUtil jwtUtil;
+  private FingerprintHelper fingerprintHelper;
   private AuthenticationManager authenticationManager;
 
-  public AuthenticationFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+  public AuthenticationFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, FingerprintHelper fingerprintHelper) {
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
+    this.fingerprintHelper = fingerprintHelper;
   }
 
   /**
@@ -63,16 +67,23 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter{
       Authentication authentication) throws IOException, ServletException {
     
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-    String accessToken = jwtUtil.generateToken(userDetails);
-    String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+    
+    String fingerprint = fingerprintHelper.generateFingerprint();
+    String hashFgp = fingerprintHelper.hashFingerprint(fingerprint);
+    String accessToken = jwtUtil.generateToken(userDetails, hashFgp);
+    String refreshToken = jwtUtil.generateRefreshToken(userDetails, hashFgp);
 
     Map<String, String> tokens = new HashMap<>();
     tokens.put("access_token", accessToken);
     tokens.put("refresh_token", refreshToken);
 
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    
+    Cookie cookie = new Cookie("Fgp", fingerprint);
+    cookie.setHttpOnly(true);
 
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.addCookie(cookie);
+    
     new ObjectMapper().writeValue(response.getOutputStream(), tokens);
   }
   
