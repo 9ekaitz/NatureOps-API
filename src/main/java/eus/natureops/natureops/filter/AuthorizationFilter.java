@@ -4,16 +4,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,14 +23,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.JWTUtil;
 
 public class AuthorizationFilter extends OncePerRequestFilter {
 
   private JWTUtil jwtUtil;
+  private FingerprintHelper fingerprintHelper;
 
-  public AuthorizationFilter(JWTUtil jwtUtil) {
+  public AuthorizationFilter(JWTUtil jwtUtil, FingerprintHelper fingerprintHelper) {
     this.jwtUtil = jwtUtil;
+    this.fingerprintHelper = fingerprintHelper;
   }
 
   @Override
@@ -40,12 +46,26 @@ public class AuthorizationFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
     else {
       String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-      if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+
+      String userFingerprint = null;
+      if (request.getCookies() != null && request.getCookies().length > 0) {
+        List<Cookie> cookies = Arrays.stream(request.getCookies()).collect(Collectors.toList());
+        Optional<Cookie> cookie = cookies.stream().filter(c -> "Fgp"
+            .equals(c.getName())).findFirst();
+        if (cookie.isPresent()) {
+          userFingerprint = cookie.get().getValue();
+        }
+      }
+
+      if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ") && userFingerprint != null) {
         try {
           String token = authorizationHeader.substring("Bearer ".length());
 
           DecodedJWT decodedJWT = jwtUtil.verifyToken(token);
 
+          String hashFgp = decodedJWT.getClaim("fingerprint").asString();
+          fingerprintHelper.verifyFingerprint(hashFgp, userFingerprint);
+          
           String username = decodedJWT.getSubject();
           String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
           Collection<SimpleGrantedAuthority> authorities = Arrays.stream(roles)
