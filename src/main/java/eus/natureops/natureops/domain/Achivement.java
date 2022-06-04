@@ -23,6 +23,7 @@ public class Achivement {
   private String image;
   private String objetivo;
   private boolean enabled;
+  private int objetivoMax;
 
 
   @Version
