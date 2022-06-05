@@ -1,6 +1,7 @@
 package eus.natureops.natureops.api;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -60,29 +61,16 @@ public class UserResource {
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody User user) {
-    User createdUser;
     try {
-      createdUser = userService.register(user);
+      userService.register(user);
     } catch (Exception e) {
-      throw new UserExistsException();      
+      throw new UserExistsException();
     }
-
-    Map<String, String> tokens = new HashMap<>();
-
-    UserDetails newUserDeatils = userDetailsService.loadUserByUsername(createdUser.getUsername());
-
-    String accessToken = jwtUtil.generateToken(newUserDeatils);
-    String refreshToken = jwtUtil.generateRefreshToken(newUserDeatils);
-
-    tokens.put("access_token", accessToken);
-    tokens.put("refresh_token", refreshToken);
-
-    return new ResponseEntity<Object>(
-        tokens, HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/update")
-  public ResponseEntity<?> update(@RequestBody UserView userView, Authentication auth) {
+  public ResponseEntity<?> update(@RequestBody UserView userView, HttpServletResponse response, Authentication auth) throws UnsupportedEncodingException {
     User createdUser;
     try {
       createdUser = userService.findByUsername(auth.getName());
@@ -91,18 +79,28 @@ public class UserResource {
       createdUser.setEmail(userView.getEmail());
       userService.save(createdUser);
     } catch (Exception e) {
-      throw new UserExistsException();      
+      throw new UserExistsException();
     }
+
+  
 
     Map<String, String> tokens = new HashMap<>();
 
-    UserDetails newUserDeatils = userDetailsService.loadUserByUsername(createdUser.getUsername());
+    UserDetails newUserDetails = userDetailsService.loadUserByUsername(createdUser.getUsername());
 
-    String accessToken = jwtUtil.generateToken(newUserDeatils);
-    String refreshToken = jwtUtil.generateRefreshToken(newUserDeatils);
+    String fingerprint = fingerprintHelper.generateFingerprint();
+    String hashFgp = fingerprintHelper.hashFingerprint(fingerprint);
+    String accessToken = jwtUtil.generateToken(newUserDetails, hashFgp);
+    String refreshToken = jwtUtil.generateRefreshToken(newUserDetails, hashFgp);
 
     tokens.put("access_token", accessToken);
     tokens.put("refresh_token", refreshToken);
+
+    Cookie cookie = new Cookie("Fgp", fingerprint);
+    cookie.setHttpOnly(true);
+
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.addCookie(cookie);
 
     return new ResponseEntity<Object>(
         tokens, HttpStatus.OK);
