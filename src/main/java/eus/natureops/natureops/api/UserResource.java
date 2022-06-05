@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.UserView;
 import eus.natureops.natureops.exceptions.UserExistsException;
+import eus.natureops.natureops.exceptions.FingerprintCookieMissingException;
 import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
 import eus.natureops.natureops.service.UserService;
 import eus.natureops.natureops.utils.FingerprintHelper;
@@ -70,7 +71,7 @@ public class UserResource {
   }
 
   @PostMapping("/update")
-  public ResponseEntity<?> update(@RequestBody UserView userView, HttpServletResponse response, Authentication auth) throws UnsupportedEncodingException {
+  public ResponseEntity<Object> update(@RequestBody UserView userView, HttpServletResponse response, Authentication auth) throws UnsupportedEncodingException {
     User createdUser;
     try {
       createdUser = userService.findByUsername(auth.getName());
@@ -102,7 +103,7 @@ public class UserResource {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.addCookie(cookie);
 
-    return new ResponseEntity<Object>(
+    return new ResponseEntity<>(
         tokens, HttpStatus.OK);
   }
 
@@ -135,7 +136,7 @@ public class UserResource {
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       try {
         if (userFingerprint == null)
-          throw new RuntimeException("Fingerprint cookie is missing");
+          throw new FingerprintCookieMissingException();
 
         String refreshToken = authorizationHeader.substring("Bearer ".length());
         DecodedJWT decodedJWT = jwtUtil.verifyToken(refreshToken);

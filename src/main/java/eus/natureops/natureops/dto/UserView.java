@@ -1,6 +1,5 @@
 package eus.natureops.natureops.dto;
 
-import eus.natureops.natureops.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Generated;
