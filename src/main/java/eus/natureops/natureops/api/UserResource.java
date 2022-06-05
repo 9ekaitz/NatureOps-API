@@ -21,6 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.UserView;
 import eus.natureops.natureops.exceptions.UserExistsException;
+import eus.natureops.natureops.form.UserRegistrationForm;
 import eus.natureops.natureops.exceptions.FingerprintCookieMissingException;
 import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
 import eus.natureops.natureops.service.UserService;
@@ -61,9 +65,14 @@ public class UserResource {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<?> register(@RequestBody User user) {
+  public ResponseEntity<?> register(@Validated @RequestBody UserRegistrationForm form, BindingResult result) {
+    if (result.hasErrors()) {
+      return new ResponseEntity<Object>(
+          result.getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.toList()),
+          HttpStatus.CONFLICT);
+    }
     try {
-      userService.register(user);
+      userService.register(form);
     } catch (Exception e) {
       throw new UserExistsException();
     }
@@ -71,7 +80,8 @@ public class UserResource {
   }
 
   @PostMapping("/update")
-  public ResponseEntity<Object> update(@RequestBody UserView userView, HttpServletResponse response, Authentication auth) throws UnsupportedEncodingException {
+  public ResponseEntity<Object> update(@RequestBody UserView userView, HttpServletResponse response,
+      Authentication auth) throws UnsupportedEncodingException {
     User createdUser;
     try {
       createdUser = userService.findByUsername(auth.getName());
@@ -82,8 +92,6 @@ public class UserResource {
     } catch (Exception e) {
       throw new UserExistsException();
     }
-
-  
 
     Map<String, String> tokens = new HashMap<>();
 

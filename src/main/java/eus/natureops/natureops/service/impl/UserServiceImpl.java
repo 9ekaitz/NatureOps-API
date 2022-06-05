@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import eus.natureops.natureops.domain.Role;
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.UserView;
+import eus.natureops.natureops.form.UserRegistrationForm;
 import eus.natureops.natureops.repository.RoleRepository;
 import eus.natureops.natureops.repository.UserRepository;
 import eus.natureops.natureops.service.UserService;
@@ -24,8 +25,12 @@ public class UserServiceImpl implements UserService {
   private PasswordEncoder passwordEncoder;
 
   @Override
-  public User register(User user) {
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
+  public User register(UserRegistrationForm form) {
+    User user = new User();
+    user.setName(form.getName());
+    user.setEmail(form.getEmail());
+    user.setUsername(form.getUsername());
+    user.setPassword(passwordEncoder.encode(form.getPassword()));
     user.setRole(roleRepository.findByName("ROLE_USER"));
     user.setEnabled(true);
 
