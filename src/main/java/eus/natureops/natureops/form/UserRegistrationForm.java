@@ -12,7 +12,7 @@ public class UserRegistrationForm {
   @NotEmpty(message = "{page.register.field.username.notEmpty}")
   private String username;
 
-  @ValidPassword(message = "Worng password")
+  @ValidPassword(message = "Worng password", upperCaseRule = true, specialCharacterRule = true, digitRule = true, lowerCaseRule = true)
   private String password;
 
   @NotEmpty(message = "{page.register.field.name.notEmpty}")

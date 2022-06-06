@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class JWTUtil implements Serializable {
 
+  private static final long ACCESS_OFFSET = 1000L * 60L;
+  private static final long REFRESH_OFFSET = 1000L * 60L * 60L * 24L * 180L;
+
   @Value("${natureops.security.jwt.secret}")
   private String secretKey;
 
@@ -88,7 +91,7 @@ public class JWTUtil implements Serializable {
 
   private String createToken(List<String> claims, String fingerprint, String subject) {
     return JWT.create().withSubject(subject)
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + 1000 * 60))
+        .withExpiresAt(new Date(ISystem.currentTimeMillis() +ACCESS_OFFSET))
         .withIssuer(issuer)
         .withClaim("roles", claims)
         .withClaim("fingerprint", fingerprint)
@@ -104,7 +107,7 @@ public class JWTUtil implements Serializable {
 
   private String createRefreshToken(String subject, String fingerprint) {
     return JWT.create().withSubject(subject)
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + 1000 * 60 * 60 * 24 * 180))
+        .withExpiresAt(new Date(ISystem.currentTimeMillis()+REFRESH_OFFSET))
         .withIssuer(issuer)
         .withClaim("fingerprint", fingerprint)
         .sign(Algorithm.HMAC256(secretKey));
