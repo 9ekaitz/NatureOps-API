@@ -65,9 +65,9 @@ public class UserResource {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<?> register(@Validated @RequestBody UserRegistrationForm form, BindingResult result) {
+  public ResponseEntity<Object> register(@Validated @RequestBody UserRegistrationForm form, BindingResult result) {
     if (result.hasErrors()) {
-      return new ResponseEntity<Object>(
+      return new ResponseEntity<>(
           result.getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.toList()),
           HttpStatus.CONFLICT);
     }
