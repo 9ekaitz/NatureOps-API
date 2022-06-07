@@ -18,28 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class JWTUtil implements Serializable {
 
+  private static final long ACCESS_OFFSET = 1000L * 60L;
+  private static final long REFRESH_OFFSET = 1000L * 60L * 60L * 24L * 180L;
+
   @Value("${natureops.security.jwt.secret}")
   private String secretKey;
 
   @Value("${natureops.security.jwt.issuer}")
   private String issuer;
-
-  /**
-   * The generateToken function generates a JWT token and returns it as a String.
-   * The function takes in the userDetails object, which contains the username and
-   * authorities of the user.
-   * The function also takes in an expiration time for when to expire this token,
-   * which is set to 1 hour by default.
-   * 
-   * @param userDetails Used to Get the user's authorities.
-   * @return A jwt token.
-   * 
-   */
-  public String generateToken(UserDetails userDetails) {
-    List<String> claims = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList());
-    return createToken(claims, userDetails.getUsername());
-  }
 
   /**
    * The generateToken function generates a JWT token and returns it as a String.
@@ -68,43 +54,25 @@ public class JWTUtil implements Serializable {
    * 6 months.
    * 
    * @param userDetails Used to get user's username
+   * @param fingerPrint The hash of the fingerprint to validate the token in each request
    * @return A JWT token
    */
-  public String generateRefreshToken(UserDetails userDetails) {
-    return createRefreshToken(userDetails.getUsername());
-  }
-
   public String generateRefreshToken(UserDetails userDetails, String fingerprint) {
     return createRefreshToken(userDetails.getUsername(), fingerprint);
   }
 
-  private String createToken(List<String> claims, String subject) {
-    return JWT.create().withSubject(subject)
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + 1000 * 60))
-        .withIssuer(issuer)
-        .withClaim("roles", claims)
-        .sign(Algorithm.HMAC256(secretKey));
-  }
-
   private String createToken(List<String> claims, String fingerprint, String subject) {
     return JWT.create().withSubject(subject)
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + 1000 * 60))
+        .withExpiresAt(new Date(ISystem.currentTimeMillis() +ACCESS_OFFSET))
         .withIssuer(issuer)
         .withClaim("roles", claims)
         .withClaim("fingerprint", fingerprint)
         .sign(Algorithm.HMAC256(secretKey));
   }
 
-  private String createRefreshToken(String subject) {
-    return JWT.create().withSubject(subject)
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + 1000 * 60 * 60 * 24 * 180))
-        .withIssuer(issuer)
-        .sign(Algorithm.HMAC256(secretKey));
-  }
-
   private String createRefreshToken(String subject, String fingerprint) {
     return JWT.create().withSubject(subject)
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + 1000 * 60 * 60 * 24 * 180))
+        .withExpiresAt(new Date(ISystem.currentTimeMillis()+REFRESH_OFFSET))
         .withIssuer(issuer)
         .withClaim("fingerprint", fingerprint)
         .sign(Algorithm.HMAC256(secretKey));

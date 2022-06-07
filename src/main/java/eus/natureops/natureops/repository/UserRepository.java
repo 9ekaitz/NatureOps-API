@@ -9,6 +9,6 @@ import eus.natureops.natureops.domain.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-  public User findByUsername(String username);
+  public <T> T findByUsername(String username, Class<T> type);
   public List<User> findAll();
 }

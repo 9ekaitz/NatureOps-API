@@ -1,6 +1,7 @@
 package eus.natureops.natureops.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -30,12 +31,12 @@ public class FingerprintHelper {
   }
 
   public String hashFingerprint(String fgp) throws UnsupportedEncodingException {
-    byte[] userFingerprintDigest = digest.digest(fgp.getBytes("utf-8"));
+    byte[] userFingerprintDigest = digest.digest(fgp.getBytes(StandardCharsets.UTF_8));
     return DatatypeConverter.printHexBinary(userFingerprintDigest);
   }
 
   public void verifyFingerprint(String hash, String fgp) throws UnsupportedEncodingException {
-    byte[] userFingerprintDigest = digest.digest(fgp.getBytes("utf-8")); 
+    byte[] userFingerprintDigest = digest.digest(fgp.getBytes(StandardCharsets.UTF_8)); 
     String fgpHash = DatatypeConverter.printHexBinary(userFingerprintDigest);
     if (!hash.equals(fgpHash)) {
       throw new FingerprintVerificationException("JWT fingerprint verification error");
