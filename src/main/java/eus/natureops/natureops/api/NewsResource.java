@@ -36,8 +36,4 @@ public class NewsResource {
     return  ResponseEntity.ok().body(newsService.getNewsSize());
   }
 
-
-  public String save(News news) {
-    return "";
-  }
 }
