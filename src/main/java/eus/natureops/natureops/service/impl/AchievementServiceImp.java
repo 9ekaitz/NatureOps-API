@@ -31,11 +31,7 @@ public class AchievementServiceImp   implements AchivementService{
     @Autowired
     UserRepository userRepository;
 
-    @Override
-    public Achivement save(Achivement achivement) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    
 
     @Override
     public List<AchivementsForm> findAll(int page, int numOfNews, String username) {
@@ -63,14 +59,7 @@ public class AchievementServiceImp   implements AchivementService{
 
    
 
-    private void findByAchivementIdUserId() {
-    }
 
-    @Override
-    public Achivement findById(Long id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public int achievementsSize() {

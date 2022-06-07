@@ -21,9 +21,7 @@ public class AchivementResource {
   @Autowired
   private AchivementService achivementService;
 
-  public String get(int id) {
-    return "";
-  }
+
   
   @GetMapping("/achivements/{username}/{page}/{size}")
   public  ResponseEntity<List<AchivementsForm>> getAll(@PathVariable(name = "page") int page, @PathVariable(name = "size") int size, @PathVariable(name = "username") String id) {
@@ -35,7 +33,5 @@ public class AchivementResource {
     return ResponseEntity.ok().body(achivementService.achievementsSize());
   }
 
-  public String save(Achivement achivement) {
-    return "";
-  }
+ 
 }

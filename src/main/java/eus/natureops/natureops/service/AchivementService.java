@@ -9,8 +9,6 @@ import eus.natureops.natureops.form.AchivementsForm;
 
 @Service
 public interface AchivementService {
-  public Achivement save(Achivement achivement);
   public List<AchivementsForm> findAll(int page, int numOfNews, String username);
   public int achievementsSize();
-  public Achivement findById(Long id);
 }
