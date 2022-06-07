@@ -4,10 +4,15 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 import eus.natureops.natureops.validation.ValidPassword;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Generated;
+import lombok.NoArgsConstructor;
 
-@Data @Generated
+@Data
+@Generated
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserRegistrationForm {
   @NotEmpty(message = "{page.register.field.username.notEmpty}")
   private String username;

@@ -10,6 +10,7 @@ import javax.persistence.Version;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Generated;
 import lombok.NoArgsConstructor;
 
@@ -23,14 +24,24 @@ public class User {
   
   @Column(unique = true)
   private String username;
+
+  @Column
   private String password;
+
+  @Column
   private String name;
+
+  @Column
   private String email;
+
+  @Column
   private boolean enabled;
 
   @ManyToOne
+  @EqualsAndHashCode.Exclude
   private Role role;
 
   @Version
+  @EqualsAndHashCode.Exclude
   private int version;
 }

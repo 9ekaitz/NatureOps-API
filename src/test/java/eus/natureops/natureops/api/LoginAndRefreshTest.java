@@ -132,7 +132,7 @@ class LoginAndRefreshTest {
 
     Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"), "RANDOM");
 
-    when(jwtUtil.generateToken(dummy)).thenReturn(createAccesstoken(1000 * 60));
+    when(jwtUtil.generateToken(dummy, "RANDOM")).thenReturn(createAccesstoken(1000 * 60, "RANDOM"));
 
     Cookie cookie = new Cookie("Fgp", "SECRET");
     MvcResult result = mvc.perform(get("http://localhost:8080/api/token/refresh")
@@ -276,15 +276,6 @@ class LoginAndRefreshTest {
         .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
         .withIssuer("natureops.eus")
         .withClaim("fingerprint", fingerprint)
-        .sign(Algorithm.HMAC256(SECRET));
-  }
-
-  private String createAccesstoken(int delta) {
-    return JWT.create().withSubject(dummy.getUsername())
-        .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
-        .withIssuer("natureops.eus")
-        .withClaim("roles", dummy.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
         .sign(Algorithm.HMAC256(SECRET));
   }
 
