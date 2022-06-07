@@ -94,7 +94,7 @@ class JWTUtilTest {
       String refreshTokenTest = jwtUtil.generateRefreshToken(dummy, "RANDOM");
 
       String refreshToken = JWT.create().withSubject(dummy.getUsername())
-          .withExpiresAt(new Date(currentTime + 1000 * 60 * 60 * 24 * 180))
+          .withExpiresAt(new Date(currentTime + 1000L * 60 * 60 * 24 * 180))
           .withIssuer(ISSUER)
           .withClaim("fingerprint", "RANDOM")
           .sign(Algorithm.HMAC256(SECRET));
