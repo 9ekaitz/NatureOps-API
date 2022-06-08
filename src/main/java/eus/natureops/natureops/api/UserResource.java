@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -175,5 +176,12 @@ public class UserResource {
     } else {
       throw new RefreshTokenMissingException();
     }
+  }
+
+  @DeleteMapping("/delete")
+  public ResponseEntity<Object> delete(Authentication auth) {
+    User user = userService.findByUsername(auth.getName());
+    userService.disable(user);
+    return ResponseEntity.ok().build();
   }
 }
