@@ -51,33 +51,35 @@ class JWTUtilTest {
   }
 
   @Test
-  void createTokenTest() {
+  void createTokenWithFingerprintTest() {
     long currentTime = ISystem.currentTimeMillis();
 
     try (MockedStatic<ISystem> utilities = Mockito.mockStatic(ISystem.class)) {
       utilities.when(ISystem::currentTimeMillis).thenReturn(currentTime);
-      String accessTokenTest = jwtUtil.generateToken(dummy);
+      String accessTokenTest = jwtUtil.generateToken(dummy, "RANDOM");
 
       String accessToken = JWT.create().withSubject(dummy.getUsername())
           .withExpiresAt(new Date(currentTime + 1000 * 60))
           .withIssuer(ISSUER)
           .withClaim("roles", Stream.of("ROLE_USER").collect(Collectors.toList()))
+          .withClaim("fingerprint", "RANDOM")
           .sign(Algorithm.HMAC256(SECRET));
       assertEquals(accessTokenTest, accessToken, "The access tokens aren\'t equal");
     }
   }
 
   @Test
-  void createRefreshTest() {
+  void createRefreshWithFingerprintTest() {
     long currentTime = ISystem.currentTimeMillis();
 
     try (MockedStatic<ISystem> utilities = Mockito.mockStatic(ISystem.class)) {
       utilities.when(ISystem::currentTimeMillis).thenReturn(currentTime);
-      String refreshTokenTest = jwtUtil.generateRefreshToken(dummy);
+      String refreshTokenTest = jwtUtil.generateRefreshToken(dummy, "RANDOM");
 
       String refreshToken = JWT.create().withSubject(dummy.getUsername())
-          .withExpiresAt(new Date(currentTime + 1000 * 60 * 60 * 24 * 180))
+          .withExpiresAt(new Date(currentTime + 1000L * 60 * 60 * 24 * 180))
           .withIssuer(ISSUER)
+          .withClaim("fingerprint", "RANDOM")
           .sign(Algorithm.HMAC256(SECRET));
       assertEquals(refreshTokenTest, refreshToken, "The refrsh tokens aren\'t equal");
     }

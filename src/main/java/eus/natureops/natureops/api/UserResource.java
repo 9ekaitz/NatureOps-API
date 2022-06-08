@@ -1,30 +1,46 @@
 package eus.natureops.natureops.api;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import eus.natureops.natureops.domain.User;
-import eus.natureops.natureops.form.ImageSubmit;
+import eus.natureops.natureops.dto.UserView;
+import eus.natureops.natureops.exceptions.UserExistsException;
+import eus.natureops.natureops.form.UserRegistrationForm;
+import eus.natureops.natureops.exceptions.FingerprintCookieMissingException;
+import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
 import eus.natureops.natureops.service.UserService;
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.JWTUtil;
 
 @RestController
@@ -35,38 +51,111 @@ public class UserResource {
   private JWTUtil jwtUtil;
 
   @Autowired
+  private FingerprintHelper fingerprintHelper;
+
+  @Autowired
   private UserService userService;
 
   @Autowired
   private UserDetailsService userDetailsService;
 
   @GetMapping("/get")
-  public ResponseEntity<User> get() {
-    return ResponseEntity.ok().body(userService.findByUsername("eka"));
+  public ResponseEntity<UserView> get(Authentication auth) {
+    return ResponseEntity.ok().body(userService.loadView(auth.getName()));
+  }
+
+  @PostMapping("/register")
+  public ResponseEntity<Object> register(@Validated @RequestBody UserRegistrationForm form, BindingResult result) {
+    if (result.hasErrors()) {
+      return new ResponseEntity<>(
+          result.getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.toList()),
+          HttpStatus.CONFLICT);
+    }
+    try {
+      userService.register(form);
+    } catch (Exception e) {
+      throw new UserExistsException();
+    }
+    return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
+
+  @PostMapping("/update")
+  public ResponseEntity<Object> update(@RequestBody UserView userView, HttpServletResponse response,
+      Authentication auth) throws UnsupportedEncodingException {
+    User createdUser;
+    try {
+      createdUser = userService.findByUsername(auth.getName());
+      createdUser.setUsername(userView.getUsername());
+      createdUser.setName(userView.getName());
+      createdUser.setEmail(userView.getEmail());
+      userService.save(createdUser);
+    } catch (Exception e) {
+      throw new UserExistsException();
+    }
+
+    Map<String, String> tokens = new HashMap<>();
+
+    UserDetails newUserDetails = userDetailsService.loadUserByUsername(createdUser.getUsername());
+
+    String fingerprint = fingerprintHelper.generateFingerprint();
+    String hashFgp = fingerprintHelper.hashFingerprint(fingerprint);
+    String accessToken = jwtUtil.generateToken(newUserDetails, hashFgp);
+    String refreshToken = jwtUtil.generateRefreshToken(newUserDetails, hashFgp);
+
+    tokens.put("access_token", accessToken);
+    tokens.put("refresh_token", refreshToken);
+
+    Cookie cookie = new Cookie("Fgp", fingerprint);
+    cookie.setHttpOnly(true);
+
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.addCookie(cookie);
+
+    return new ResponseEntity<>(
+        tokens, HttpStatus.OK);
   }
 
   /**
-   * The refreshToken method is mappend to the <b>/api/token/refresh</b> path and recives a <b>GET</b> request with the
-   * refresh token in the Authorization header. It checks if the refresh token is valid and hasn't
-   * expired and sends a new access token back. If the refresh token is expired or malformed the error
+   * The refreshToken method is mappend to the <b>/api/token/refresh</b> path and
+   * recives a <b>GET</b> request with the
+   * refresh token in the Authorization header. It checks if the refresh token is
+   * valid and hasn't
+   * expired and sends a new access token back. If the refresh token is expired or
+   * malformed the error
    * message generated by {@link com.auth0.jwt.JWTVerifier} is sent back
    * 
-   * @param request the {@link HttpServletRequest}
+   * @param request  the {@link HttpServletRequest}
    * @param response the {@link HttpServletResponse}
    * @throws IOException
    */
   @GetMapping("/token/refresh")
-  public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException{
+  public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+    String userFingerprint = null;
+    if (request.getCookies() != null && request.getCookies().length > 0) {
+      List<Cookie> cookies = Arrays.stream(request.getCookies()).collect(Collectors.toList());
+      Optional<Cookie> cookie = cookies.stream().filter(c -> "Fgp"
+          .equals(c.getName())).findFirst();
+      if (cookie.isPresent()) {
+        userFingerprint = cookie.get().getValue();
+      }
+    }
     if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
       try {
+        if (userFingerprint == null)
+          throw new FingerprintCookieMissingException();
+
         String refreshToken = authorizationHeader.substring("Bearer ".length());
         DecodedJWT decodedJWT = jwtUtil.verifyToken(refreshToken);
+
+        String hashFgp = decodedJWT.getClaim("fingerprint").asString();
+        fingerprintHelper.verifyFingerprint(hashFgp, userFingerprint);
 
         String username = decodedJWT.getSubject();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        String accessToken = jwtUtil.generateToken(userDetails);
+        String accessToken = jwtUtil.generateToken(userDetails, hashFgp);
 
         Map<String, String> tokens = new HashMap<>();
         tokens.put("access_token", accessToken);
@@ -84,24 +173,7 @@ public class UserResource {
         new ObjectMapper().writeValue(response.getOutputStream(), error);
       }
     } else {
-      throw new RuntimeException("Refresh token is missing");
+      throw new RefreshTokenMissingException();
     }
-  }
-
-  @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-  public void submitImage(HttpServletRequest request, HttpServletResponse response, ImageSubmit imageSubmit) {
-      System.out.println(imageSubmit.getLocation());
-  }
-
-  public String getAll() {
-    return "";
-  }
-
-  public String auth(String username, String password) {
-    return "";
-  }
-
-  public String save(User user) {
-    return "";
   }
 }

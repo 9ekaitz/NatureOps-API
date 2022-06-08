@@ -22,9 +22,9 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
   
-  @Column
+  @Column(unique = true)
   private String username;
-  
+
   @Column
   private String password;
 
@@ -38,6 +38,7 @@ public class User {
   private boolean enabled;
 
   @ManyToOne
+  @EqualsAndHashCode.Exclude
   private Role role;
 
   @Version
