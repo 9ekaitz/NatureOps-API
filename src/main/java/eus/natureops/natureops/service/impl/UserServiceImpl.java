@@ -49,8 +49,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User disable(User user) {
-    // TODO Auto-generated method stub
-    return null;
+    user.setEnabled(false);
+    user.setUsername(user.getId()+"_"+user.getUsername());
+    return userRepository.save(user);
   }
 
   @Override
