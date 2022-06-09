@@ -2,12 +2,12 @@ package eus.natureops.natureops.service;
 
 import java.util.List;
 
-import eus.natureops.natureops.domain.Achivement;
+import org.springframework.stereotype.Service;
 
+import eus.natureops.natureops.dto.AchievementView;
+
+@Service
 public interface AchivementService {
-  public Achivement save(Achivement achivement);
-
-  public List<Achivement> findAll();
-
-  public Achivement findById(Long id);
+  public List<AchievementView> getPage(int page, int numOfNews, String username);
+  public int achievementsSize();
 }
