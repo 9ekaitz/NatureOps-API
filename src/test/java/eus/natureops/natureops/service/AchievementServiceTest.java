@@ -45,7 +45,7 @@ class AchievementServiceTest {
         Achievement achivement = new Achievement();
         lista.add(achivement);
         when(achivementRepository.findByEnabledTrue()).thenReturn(lista);
-        assertEquals(achievementServiceImp.achievementsSize(), 1);
+        assertEquals(1, achievementServiceImp.achievementsSize());
     }
 
     @Test

@@ -99,7 +99,7 @@ class AchivementResourcesTest {
         .cookie(cookie))
         .andExpect(status().isOk()).andReturn();
 
-    assertEquals(result.getResponse().getContentAsString(), "6");
+    assertEquals("6", result.getResponse().getContentAsString());
   }
 
   @Test
