@@ -8,11 +8,14 @@ import javax.persistence.Id;
 import javax.persistence.Version;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Generated;
 
 @Entity
 @Data
 @Generated
+@AllArgsConstructor
+@NoArgsConstructor
 public class News {
 
   @Id
@@ -35,5 +38,6 @@ public class News {
   private boolean enabled;
 
   @Version
+  @EqualsAndHashCode.Exclude
   private int version;
 }

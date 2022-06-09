@@ -34,13 +34,13 @@ class NewsServiceImplTest {
     void testFindAll()
     {
         List<News> lista = new ArrayList<>();
-        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true);
-        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true);
+        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true, 0);
+        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true, 0);
         lista.add(noticia1);
         lista.add(noticia2);
         
         Pageable sortedByName = PageRequest.of(0,2, Sort.by("id").descending());
-        Page page = new PageImpl<>(lista);
+        Page<News> page = new PageImpl<>(lista);
         when(newsRepository.findByEnabledTrue(sortedByName)).thenReturn(page);
         assertEquals(newsServiceImpl.findAll(0,2).toString(), lista.toString());
     }
@@ -49,12 +49,11 @@ class NewsServiceImplTest {
     void testNewsSize()
     {
         List<News> lista = new ArrayList<>();
-        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true);
-        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true);
+        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true, 0);
+        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true, 0);
         lista.add(noticia1);
         lista.add(noticia2);
-        
-       
+          
         when(newsRepository.findByEnabledTrue()).thenReturn(lista);
         assertEquals(newsServiceImpl.getNewsSize(), 2);
     }

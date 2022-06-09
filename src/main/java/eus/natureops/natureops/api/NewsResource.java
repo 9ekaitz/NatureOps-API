@@ -14,22 +14,21 @@ import eus.natureops.natureops.domain.News;
 import eus.natureops.natureops.service.NewsService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/news")
 public class NewsResource {
 
   @Autowired
   private NewsService newsService;
 
-  @GetMapping("/news/{page}/{size}" )
+  @GetMapping("/{page}/{size}" )
   public ResponseEntity<List<News>> getAll(@PathVariable(name = "page") int page, @PathVariable(name = "size") int size ) {
 
     return  ResponseEntity.ok().body(newsService.findAll(page,size));
   }
 
 
-  @GetMapping("/news/size" )
+  @GetMapping("/size" )
   public ResponseEntity<Integer> getSize() {
-
     return  ResponseEntity.ok().body(newsService.getNewsSize());
   }
 
