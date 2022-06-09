@@ -16,8 +16,9 @@ import eus.natureops.natureops.filter.AuthorizationFilter;
 import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.JWTUtil;
 
-@Configuration @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter{
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Autowired
   private UserDetailsService userDetailsService;
@@ -38,7 +39,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    AuthenticationFilter authenticationFilter = new AuthenticationFilter(this.authenticationManagerBean(), jwtUtil, fingerprintHelper);
+    AuthenticationFilter authenticationFilter = new AuthenticationFilter(this.authenticationManagerBean(), jwtUtil,
+        fingerprintHelper);
     authenticationFilter.setFilterProcessesUrl("/api/login");
     http.csrf().disable();
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -46,6 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
     http.authorizeRequests().antMatchers("/api/get/**").hasAnyAuthority("ROLE_USER");
     http.authorizeRequests().anyRequest().authenticated();
     http.addFilter(authenticationFilter);
-    http.addFilterBefore(new AuthorizationFilter(jwtUtil, fingerprintHelper), UsernamePasswordAuthenticationFilter.class);
+    http.addFilterBefore(new AuthorizationFilter(jwtUtil, fingerprintHelper),
+        UsernamePasswordAuthenticationFilter.class);
   }
 }
