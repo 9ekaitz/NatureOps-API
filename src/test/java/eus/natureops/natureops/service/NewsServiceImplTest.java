@@ -23,7 +23,7 @@ import eus.natureops.natureops.service.impl.NewsServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class NewsServiceImplTest {
-    
+
     @InjectMocks
     NewsServiceImpl newsServiceImpl;
 
@@ -31,31 +31,29 @@ class NewsServiceImplTest {
     NewsRepository newsRepository;
 
     @Test
-    void testFindAll()
-    {
+    void testFindAll() {
         List<News> lista = new ArrayList<>();
         News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true, 0);
         News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true, 0);
         lista.add(noticia1);
         lista.add(noticia2);
-        
-        Pageable sortedByName = PageRequest.of(0,2, Sort.by("id").descending());
+
+        Pageable sortedByName = PageRequest.of(0, 2, Sort.by("id").descending());
         Page<News> page = new PageImpl<>(lista);
         when(newsRepository.findByEnabledTrue(sortedByName)).thenReturn(page);
-        assertEquals(newsServiceImpl.findAll(0,2).toString(), lista.toString());
+        assertEquals(lista.toString(), newsServiceImpl.findAll(0, 2).toString());
     }
 
     @Test
-    void testNewsSize()
-    {
+    void testNewsSize() {
         List<News> lista = new ArrayList<>();
         News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true, 0);
         News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true, 0);
         lista.add(noticia1);
         lista.add(noticia2);
-          
+
         when(newsRepository.findByEnabledTrue()).thenReturn(lista);
-        assertEquals(newsServiceImpl.getNewsSize(), 2);
+        assertEquals(2, newsServiceImpl.getNewsSize());
     }
-    
+
 }

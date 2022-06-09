@@ -42,85 +42,87 @@ import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
 
-@WebMvcTest({NewsResource.class })
+@WebMvcTest({ NewsResource.class })
 @ActiveProfiles("ci")
 class NoticiasResourcesTest {
 
-    private final static String SECRET = "secret";
+  private final static String SECRET = "secret";
 
-    @Autowired
-    MockMvc mvc;
-    static UserDetails dummy;
+  @Autowired
+  MockMvc mvc;
+  static UserDetails dummy;
 
-    @MockBean
-    FingerprintHelper fingerprintHelper;
+  @MockBean
+  FingerprintHelper fingerprintHelper;
 
-    @MockBean
-    NewsService newsService;
+  @MockBean
+  NewsService newsService;
 
-    @MockBean
-    JWTUtil jwtUtil;
+  @MockBean
+  JWTUtil jwtUtil;
 
-    @MockBean
-    UserDetailsService userDetailsService;
+  @MockBean
+  UserDetailsService userDetailsService;
 
+  @BeforeAll
+  public static void setUp() {
+    dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()),
+        Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+  }
 
-    @BeforeAll
-    public static void setUp() {
-      dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()), Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-    }
+  @Test
+  void testgetSize() throws Exception {
+    String accessToken = createAccesstoken(+1000 * 60);
+    Cookie cookie = new Cookie("Fgp", "SECRET");
 
-    @Test
-    void testgetSize() throws Exception {
-        String accessToken = createAccesstoken(+1000 * 60);
-        Cookie cookie = new Cookie("Fgp", "SECRET");
-
-        when(newsService.getNewsSize()).thenReturn(6);
-        when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
-        when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
-          @Override
-          public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
-            return verifier.verify(accessToken);
-          }
-        });
-
-        MvcResult result  = mvc.perform(get("http://localhost:8080/api/news/size")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).cookie(cookie))
-        .andExpect(status().isOk()).andReturn();
-
-        assertEquals(result.getResponse().getContentAsString(), "6");
-    }
-    
-    @Test
-    void testgetAll() throws Exception {
-        String accessToken = createAccesstoken(+1000 * 60);
-        Cookie cookie = new Cookie("Fgp", "SECRET");
-        List<News> lista = new ArrayList<>();
-        when(newsService.findAll(0,1)).thenReturn(lista);
-
-        when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
-        when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
-          @Override
-          public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
-            return verifier.verify(accessToken);
-          }
-        });
-
-        MvcResult result  = mvc.perform(get("http://localhost:8080/api/news/0/1")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).cookie(cookie))
-        .andExpect(status().isOk()).andReturn();
-
-        assertEquals(result.getResponse().getContentAsString(), lista.toString());
-    }
-
-    private String createAccesstoken(int delta) {
-        return JWT.create().withSubject(dummy.getUsername())
-            .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
-            .withIssuer("natureops.eus")
-            .withClaim("roles", dummy.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-            .sign(Algorithm.HMAC256(SECRET));
+    when(newsService.getNewsSize()).thenReturn(6);
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(accessToken);
       }
+    });
+
+    MvcResult result = mvc.perform(get("http://localhost:8080/api/news/size")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
+        .andExpect(status().isOk()).andReturn();
+
+    assertEquals("6", result.getResponse().getContentAsString());
+  }
+
+  @Test
+  void testgetAll() throws Exception {
+    String accessToken = createAccesstoken(+1000 * 60);
+    Cookie cookie = new Cookie("Fgp", "SECRET");
+    List<News> lista = new ArrayList<>();
+    when(newsService.findAll(0, 1)).thenReturn(lista);
+
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(accessToken);
+      }
+    });
+
+    MvcResult result = mvc.perform(get("http://localhost:8080/api/news/0/1")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
+        .andExpect(status().isOk()).andReturn();
+
+    assertEquals(lista.toString(), result.getResponse().getContentAsString());
+  }
+
+  private String createAccesstoken(int delta) {
+    return JWT.create().withSubject(dummy.getUsername())
+        .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
+        .withIssuer("natureops.eus")
+        .withClaim("roles", dummy.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+        .sign(Algorithm.HMAC256(SECRET));
+  }
 }
