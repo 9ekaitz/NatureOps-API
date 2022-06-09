@@ -47,15 +47,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
     else {
       String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-      String userFingerprint = null;
-      if (request.getCookies() != null && request.getCookies().length > 0) {
-        List<Cookie> cookies = Arrays.stream(request.getCookies()).collect(Collectors.toList());
-        Optional<Cookie> cookie = cookies.stream().filter(c -> "Fgp"
-            .equals(c.getName())).findFirst();
-        if (cookie.isPresent()) {
-          userFingerprint = cookie.get().getValue();
-        }
-      }
+      String userFingerprint = getFingerprint(request);
 
       if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ") && userFingerprint != null) {
         try {
@@ -65,7 +57,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
           String hashFgp = decodedJWT.getClaim("fingerprint").asString();
           fingerprintHelper.verifyFingerprint(hashFgp, userFingerprint);
-          
+
           String username = decodedJWT.getSubject();
           String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
           Collection<SimpleGrantedAuthority> authorities = Arrays.stream(roles)
@@ -88,5 +80,19 @@ public class AuthorizationFilter extends OncePerRequestFilter {
       } else
         filterChain.doFilter(request, response);
     }
+  }
+
+  private String getFingerprint(HttpServletRequest request) {
+    String userFingerprint = null;
+    if (request.getCookies() != null && request.getCookies().length > 0) {
+      List<Cookie> cookies = Arrays.stream(request.getCookies()).collect(Collectors.toList());
+      Optional<Cookie> cookie = cookies.stream().filter(c -> "Fgp"
+          .equals(c.getName())).findFirst();
+      if (cookie.isPresent()) {
+        userFingerprint = cookie.get().getValue();
+      }
+    }
+
+    return userFingerprint;
   }
 }
