@@ -14,15 +14,15 @@ import lombok.Generated;
 @Entity
 @Data
 @Generated
-public class AchivementUser {
+public class AchievementUser {
 
   @EmbeddedId
-  private AchivementUserKey id;
+  private AchievementUserKey id;
 
   @ManyToOne
   @MapsId("achivementId")
   @JoinColumn(name = "achivement_id")
-  private Achivement achivement;
+  private Achievement achievement;
 
   @ManyToOne
   @MapsId("userId")

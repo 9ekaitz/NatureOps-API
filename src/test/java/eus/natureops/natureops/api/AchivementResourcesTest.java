@@ -5,11 +5,16 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.Cookie;
+import javax.xml.bind.DatatypeConverter;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,89 +41,106 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
-import eus.natureops.natureops.domain.Achivement;
-import eus.natureops.natureops.domain.News;
-import eus.natureops.natureops.form.AchivementsForm;
+import eus.natureops.natureops.dto.AchievementView;
 import eus.natureops.natureops.service.AchivementService;
-import eus.natureops.natureops.service.NewsService;
-import eus.natureops.natureops.service.impl.AchievementServiceImp;
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest({AchivementResource.class })
+@WebMvcTest({ AchivementResource.class })
 @ActiveProfiles("ci")
 class AchivementResourcesTest {
 
-    private final static String SECRET = "secret";
+  private final static String SECRET = "secret";
 
-    @Autowired
-    MockMvc mvc;
-    static UserDetails dummy;
+  @Autowired
+  MockMvc mvc;
 
-    @MockBean
-    AchivementService achivementService;
+  @MockBean
+  AchivementService achivementService;
 
-    @MockBean
-    JWTUtil jwtUtil;
+  @MockBean
+  JWTUtil jwtUtil;
 
-    @MockBean
-    UserDetailsService userDetailsService;
+  @MockBean
+  UserDetailsService userDetailsService;
 
+  @MockBean
+  FingerprintHelper fingerprintHelper;
 
-    @BeforeAll
-    public static void setUp() {
-      dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()), Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-    }
+  static UserDetails dummy;
 
-    @Test
-    void testgetSize() throws Exception {
-        String accessToken = createAccesstoken(+1000 * 60);
-        when(achivementService.achievementsSize()).thenReturn(6);
-        when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
-        when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
-          @Override
-          public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
-            return verifier.verify(accessToken);
-          }
-        });
+  static MessageDigest digest;
 
-        MvcResult result  = mvc.perform(get("http://localhost:8080/api/achivements/size")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-        .andExpect(status().isOk()).andReturn();
+  @BeforeAll
+  public static void setUp() throws NoSuchAlgorithmException {
+    dummy = new User("eka", BCrypt.hashpw("123", BCrypt.gensalt()),
+        Stream.of("ROLE_USER").map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+    digest = MessageDigest.getInstance("SHA-256");
+  }
 
-        assertEquals(result.getResponse().getContentAsString(), "6");
-    }
-    
-    @Test
-    void testgetAll() throws Exception {
-        String accessToken = createAccesstoken(+1000 * 60);
-        List<AchivementsForm> lista = new ArrayList<>();
-        when(achivementService.findAll(0,3,"eka")).thenReturn(lista);
-
-        when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
-        when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
-          @Override
-          public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
-            return verifier.verify(accessToken);
-          }
-        });
-
-        MvcResult result  = mvc.perform(get("http://localhost:8080/api/achivements/eka/0/3")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-        .andExpect(status().isOk()).andReturn();
-
-        assertEquals(result.getResponse().getContentAsString(), lista.toString());
-    }
-
-    private String createAccesstoken(int delta) {
-        return JWT.create().withSubject(dummy.getUsername())
-            .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
-            .withIssuer("natureops.eus")
-            .withClaim("roles", dummy.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-            .sign(Algorithm.HMAC256(SECRET));
+  @Test
+  void testgetSize() throws Exception {
+    String accessToken = createAccesstoken(+1000 * 60, "RANDOM");
+    when(achivementService.achievementsSize()).thenReturn(6);
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(accessToken);
       }
+    });
+
+    MvcResult result = mvc.perform(get("http://localhost:8080/api/achivements/size")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+        .andExpect(status().isOk()).andReturn();
+
+    assertEquals(result.getResponse().getContentAsString(), "6");
+  }
+
+  @Test
+  void testgetAll() throws Exception {
+    String accessToken = createAccesstoken(1000L * 60, createHash("RANDOM"));
+
+    List<AchievementView> lista = new ArrayList<>();
+    when(achivementService.getPage(0, 3, "eka")).thenReturn(lista);
+
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(accessToken);
+      }
+    });
+
+    Cookie cookie = new Cookie("Fgp", "RANDOM");
+    MvcResult result = mvc.perform(get("http://localhost:8080/api/achivements/0/3")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
+        .andExpect(status().isOk()).andReturn();
+
+    assertEquals(result.getResponse().getContentAsString(), lista.toString());
+  }
+
+  private String createAccesstoken(long delta, String fingerprint) {
+    return JWT.create().withSubject(dummy.getUsername())
+        .withExpiresAt(new Date(ISystem.currentTimeMillis() + delta))
+        .withIssuer("natureops.eus")
+        .withClaim("roles", dummy.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+        .withClaim("fingerprint", fingerprint)
+        .sign(Algorithm.HMAC256(SECRET));
+  }
+
+  private String createHash(String fgp) {
+    try {
+      byte[] userFingerprintDigest = digest.digest(fgp.getBytes("utf-8"));
+      return DatatypeConverter.printHexBinary(userFingerprintDigest);
+    } catch (Exception e) {
+      return null;
+    }
+  }
 }

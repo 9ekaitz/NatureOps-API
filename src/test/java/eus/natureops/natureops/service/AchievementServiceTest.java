@@ -17,71 +17,64 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import eus.natureops.natureops.domain.Achivement;
-import eus.natureops.natureops.domain.AchivementUser;
-import eus.natureops.natureops.domain.News;
+import eus.natureops.natureops.domain.Achievement;
+import eus.natureops.natureops.domain.AchievementUser;
 import eus.natureops.natureops.domain.User;
+import eus.natureops.natureops.dto.AchievementView;
 import eus.natureops.natureops.form.AchivementsForm;
 import eus.natureops.natureops.repository.AchievementsUserRepository;
 import eus.natureops.natureops.repository.AchivementRepository;
-import eus.natureops.natureops.repository.NewsRepository;
-import eus.natureops.natureops.repository.UserRepository;
 import eus.natureops.natureops.service.impl.AchievementServiceImp;
 
 @ExtendWith(MockitoExtension.class)
-class AchivementServiceTest {
-    
+class AchievementServiceTest {
+
     @InjectMocks
     AchievementServiceImp achievementServiceImp;
 
     @Mock
     AchivementRepository achivementRepository;
+
     @Mock
-    UserRepository userRepository;
+    UserService userService;
     @Mock
     AchievementsUserRepository achievementsUserRepository;
 
     @Test
-    void testAchivementSize()
-    {
-        List<Achivement> lista = new ArrayList<>();
-        Achivement achivement = new Achivement();
+    void testAchievementSize() {
+        List<Achievement> lista = new ArrayList<>();
+        Achievement achivement = new Achievement();
         lista.add(achivement);
         when(achivementRepository.findByEnabledTrue()).thenReturn(lista);
-        assertEquals(achievementServiceImp.achievementsSize(),1);
+        assertEquals(achievementServiceImp.achievementsSize(), 1);
     }
 
     @Test
-    void testNewsSize()
-    {
-        List<Achivement> lista = new ArrayList<>();
-        List<AchivementUser> listAchivement = new ArrayList<>();
-        AchivementUser achivementUser = new AchivementUser();
-        Achivement achivement = new Achivement();
+    void testGetAchievement() {
+        User user = new User(1L, "dummy", "password", "name", "email", true, null, 1);
+        List<AchievementView> listAchivement = new ArrayList<>();
+        AchievementUser achivementUser = new AchievementUser();
+        Achievement achivement = new Achievement();
         achivement.setId(0);
-        lista.add(achivement);
         achivementUser.setProgress(50);
-        achivementUser.setAchivement(achivement);
-        listAchivement.add(achivementUser);
+        achivementUser.setAchievement(achivement);
+        achivementUser.setUser(user);
 
-      
-        
-        Pageable sortedByName = PageRequest.of(0,3, Sort.by("id").descending());
-        Page page = new PageImpl<>(lista);
-        User user = new User();
-        user.setId(0);
-        when(achivementRepository.findByEnabledTrue(sortedByName)).thenReturn(page);
-        when(userRepository.findByUsername("eka")).thenReturn(user);
-        when(achievementsUserRepository.findByUser(user)).thenReturn(listAchivement);
+        Pageable sortedById = PageRequest.of(0, 3, Sort.by("id").descending());
+        Page<AchievementView> page = new PageImpl<>(listAchivement);
+
+        when(userService.findByUsername("eka")).thenReturn(user);
+
+        when(achievementsUserRepository.findByUser(user, sortedById, AchievementView.class)).thenReturn(page);
 
         List<AchivementsForm> listAchivementsForms = new ArrayList<>();
         AchivementsForm achivementsForm = new AchivementsForm();
         achivementsForm.setAchivement(achivement);
         achivementsForm.setProgress(50);
         listAchivementsForms.add(achivementsForm);
-        assertEquals(achievementServiceImp.findAll(0,3,"eka"), listAchivementsForms);
 
+        assertEquals(achievementServiceImp.getPage(0, 3, "eka"), listAchivement);
 
     }
-    
+
 }

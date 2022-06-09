@@ -11,12 +11,12 @@ import lombok.Generated;
 @Data
 @Generated
 @Embeddable
-public class AchivementUserKey implements Serializable {
+public class AchievementUserKey implements Serializable {
 
   private static final long serialVersionUID = 42347061246458317L;
 
-  @Column(name = "achivement_id")
-  private Long achivementId;
+  @Column(name = "achievement_id")
+  private Long achievementId;
 
   @Column(name = "user_id")
   private Long userId;

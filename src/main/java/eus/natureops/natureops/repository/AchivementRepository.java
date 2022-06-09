@@ -7,12 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import eus.natureops.natureops.domain.Achivement;
+import eus.natureops.natureops.domain.Achievement;
 
 @Repository
-public interface AchivementRepository  extends JpaRepository<Achivement, Long>  {
-    public List<Achivement> findByEnabledTrue();
-    public Page  findByEnabledTrue(Pageable pageable);
+public interface AchivementRepository  extends JpaRepository<Achievement, Long>  {
+    public List<Achievement> findByEnabledTrue();
+    public Page<Achievement>  findByEnabledTrue(Pageable pageable);
 
 }
 

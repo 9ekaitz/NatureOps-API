@@ -1,5 +1,6 @@
 package eus.natureops.natureops.domain;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,18 +14,26 @@ import lombok.Generated;
 @Entity
 @Data
 @Generated
-public class Achivement {
+public class Achievement {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
 
+  @Column
   private String desription;
-  private String image;
-  private String objetivo;
-  private boolean enabled;
-  private int objetivoMax;
 
+  @Column
+  private String image;
+
+  @Column
+  private String objetivo;
+
+  @Column
+  private boolean enabled;
+
+  @Column
+  private int objetivoMax;
 
   @Version
   @EqualsAndHashCode.Exclude
