@@ -21,7 +21,6 @@ import eus.natureops.natureops.domain.Achievement;
 import eus.natureops.natureops.domain.AchievementUser;
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.AchievementView;
-import eus.natureops.natureops.form.AchivementsForm;
 import eus.natureops.natureops.repository.AchievementsUserRepository;
 import eus.natureops.natureops.repository.AchivementRepository;
 import eus.natureops.natureops.service.impl.AchievementServiceImp;
@@ -66,12 +65,6 @@ class AchievementServiceTest {
         when(userService.findByUsername("eka")).thenReturn(user);
 
         when(achievementsUserRepository.findByUser(user, sortedById, AchievementView.class)).thenReturn(page);
-
-        List<AchivementsForm> listAchivementsForms = new ArrayList<>();
-        AchivementsForm achivementsForm = new AchivementsForm();
-        achivementsForm.setAchivement(achivement);
-        achivementsForm.setProgress(50);
-        listAchivementsForms.add(achivementsForm);
 
         assertEquals(achievementServiceImp.getPage(0, 3, "eka"), listAchivement);
 
