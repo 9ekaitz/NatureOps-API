@@ -93,8 +93,10 @@ class AchivementResourcesTest {
       }
     });
 
+    Cookie cookie = new Cookie("Fgp", "RANDOM");
     MvcResult result = mvc.perform(get("http://localhost:8080/api/achivements/size")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
         .andExpect(status().isOk()).andReturn();
 
     assertEquals(result.getResponse().getContentAsString(), "6");
