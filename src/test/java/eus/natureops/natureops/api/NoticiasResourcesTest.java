@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.http.Cookie;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,11 +40,12 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 
 import eus.natureops.natureops.domain.News;
 import eus.natureops.natureops.service.NewsService;
+import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest({ NewsResource.class })
+@WebMvcTest({NewsResource.class })
 @ActiveProfiles("ci")
 class NoticiasResourcesTest {
 
@@ -51,6 +54,9 @@ class NoticiasResourcesTest {
     @Autowired
     MockMvc mvc;
     static UserDetails dummy;
+
+    @MockBean
+    FingerprintHelper fingerprintHelper;
 
     @MockBean
     NewsService newsService;
@@ -70,6 +76,8 @@ class NoticiasResourcesTest {
     @Test
     void testgetSize() throws Exception {
         String accessToken = createAccesstoken(+1000 * 60);
+        Cookie cookie = new Cookie("Fgp", "SECRET");
+
         when(newsService.getNewsSize()).thenReturn(6);
         when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
         when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
@@ -81,7 +89,7 @@ class NoticiasResourcesTest {
         });
 
         MvcResult result  = mvc.perform(get("http://localhost:8080/api/news/size")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).cookie(cookie))
         .andExpect(status().isOk()).andReturn();
 
         assertEquals(result.getResponse().getContentAsString(), "6");
@@ -90,6 +98,7 @@ class NoticiasResourcesTest {
     @Test
     void testgetAll() throws Exception {
         String accessToken = createAccesstoken(+1000 * 60);
+        Cookie cookie = new Cookie("Fgp", "SECRET");
         List<News> lista = new ArrayList<>();
         when(newsService.findAll(0,1)).thenReturn(lista);
 
@@ -103,7 +112,7 @@ class NoticiasResourcesTest {
         });
 
         MvcResult result  = mvc.perform(get("http://localhost:8080/api/news/0/1")
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).cookie(cookie))
         .andExpect(status().isOk()).andReturn();
 
         assertEquals(result.getResponse().getContentAsString(), lista.toString());
