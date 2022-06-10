@@ -1,7 +1,18 @@
 package eus.natureops.natureops.repository;
 
-import eus.natureops.natureops.domain.Achivement;
+import java.util.List;
 
-public interface AchivementRepository {
-  public Achivement findByName(String name);
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import eus.natureops.natureops.domain.Achievement;
+
+@Repository
+public interface AchivementRepository  extends JpaRepository<Achievement, Long>  {
+    public List<Achievement> findByEnabledTrue();
+    public Page<Achievement>  findByEnabledTrue(Pageable pageable);
+
 }
+

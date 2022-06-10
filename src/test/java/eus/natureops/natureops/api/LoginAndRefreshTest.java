@@ -25,7 +25,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -40,7 +39,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -51,7 +49,6 @@ import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest({ UserResource.class })
 @ActiveProfiles("ci")
 class LoginAndRefreshTest {

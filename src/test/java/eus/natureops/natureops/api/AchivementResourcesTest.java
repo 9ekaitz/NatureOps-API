@@ -1,16 +1,15 @@
 package eus.natureops.natureops.api;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,6 +18,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,41 +32,42 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.auth0.jwt.interfaces.JWTVerifier;
 
-import eus.natureops.natureops.service.RoleService;
-import eus.natureops.natureops.service.UserService;
+import eus.natureops.natureops.dto.AchievementView;
+import eus.natureops.natureops.service.AchivementService;
 import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
 
-@WebMvcTest({ UserResource.class })
+@ExtendWith(SpringExtension.class)
+@WebMvcTest({ AchivementResource.class })
 @ActiveProfiles("ci")
-class UserResourceTest {
+class AchivementResourcesTest {
+
+  private final static String SECRET = "secret";
 
   @Autowired
   MockMvc mvc;
 
   @MockBean
+  AchivementService achivementService;
+
+  @MockBean
   JWTUtil jwtUtil;
-
-  @MockBean
-  FingerprintHelper fingerprintHelper;
-
-  @MockBean
-  UserService userService;
 
   @MockBean
   UserDetailsService userDetailsService;
 
   @MockBean
-  RoleService roleService;
+  FingerprintHelper fingerprintHelper;
 
   static UserDetails dummy;
 
@@ -79,54 +80,51 @@ class UserResourceTest {
     digest = MessageDigest.getInstance("SHA-256");
   }
 
-  // @Test
-  // void testUpdate() throws Exception {
-  // String refreshToken = createRefreshtoken(-1000 * 60 * 60 * 24,
-  // createHash("RANDOM"));
+  @Test
+  void testgetSize() throws Exception {
+    String accessToken = createAccesstoken(+1000 * 60, "RANDOM");
+    when(achivementService.achievementsSize()).thenReturn(6);
+    when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
+    when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
+      @Override
+      public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+        return verifier.verify(accessToken);
+      }
+    });
 
-  // when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
-  // when(jwtUtil.verifyToken(refreshToken)).then(new Answer<DecodedJWT>() {
-  // @Override
-  // public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
-  // JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
-  // return verifier.verify(refreshToken);
-  // }
-  // });
-  // Mockito.doNothing().when(fingerprintHelper).verifyFingerprint(createHash("RANDOM"),
-  // "RANDOM");
+    Cookie cookie = new Cookie("Fgp", "RANDOM");
+    MvcResult result = mvc.perform(get("http://localhost:8080/api/achivements/size")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+        .cookie(cookie))
+        .andExpect(status().isOk()).andReturn();
 
-  // UserView userView = new UserView(1L, "modified", "name", "email");
-
-  // Cookie cookie = new Cookie("Fgp", "SECRET");
-  // mvc.perform(post("http://localhost:8080/api/update")
-  // .contentType(MediaType.APPLICATION_JSON)
-  // .content(asJsonString(userView))
-  // .cookie(cookie))
-  // .andExpect(status().isForbidden())
-  // .andExpect(result -> assertTrue(result.getResolvedException() instanceof
-  // RefreshTokenMissingException));
-  // }
+    assertEquals("6", result.getResponse().getContentAsString());
+  }
 
   @Test
-  void testDelete() throws Exception {
+  void testgetAll() throws Exception {
     String accessToken = createAccesstoken(1000L * 60, createHash("RANDOM"));
+
+    List<AchievementView> lista = new ArrayList<>();
+    when(achivementService.getPage(0, 3, "eka")).thenReturn(lista);
 
     when(userDetailsService.loadUserByUsername("eka")).thenReturn(dummy);
     when(jwtUtil.verifyToken(accessToken)).then(new Answer<DecodedJWT>() {
       @Override
       public DecodedJWT answer(InvocationOnMock invocation) throws Throwable {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256("SECRET")).build();
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
         return verifier.verify(accessToken);
       }
     });
 
-    Cookie cookie = new Cookie("Fgp", "SECRET");
-    mvc.perform(delete("http://localhost:8080/api/delete")
+    Cookie cookie = new Cookie("Fgp", "RANDOM");
+    MvcResult result = mvc.perform(get("http://localhost:8080/api/achivements/0/3")
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
         .cookie(cookie))
-        .andExpect(status().isOk());
-    verify(userService, times(1)).findByUsername(anyString());
-    verify(userService, times(1)).disable(any());
+        .andExpect(status().isOk()).andReturn();
+
+    assertEquals(result.getResponse().getContentAsString(), lista.toString());
   }
 
   private String createAccesstoken(long delta, String fingerprint) {
@@ -136,7 +134,7 @@ class UserResourceTest {
         .withClaim("roles", dummy.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
         .withClaim("fingerprint", fingerprint)
-        .sign(Algorithm.HMAC256("SECRET"));
+        .sign(Algorithm.HMAC256(SECRET));
   }
 
   private String createHash(String fgp) {
@@ -145,14 +143,6 @@ class UserResourceTest {
       return DatatypeConverter.printHexBinary(userFingerprintDigest);
     } catch (Exception e) {
       return null;
-    }
-  }
-
-  private static String asJsonString(final Object obj) {
-    try {
-      return new ObjectMapper().writeValueAsString(obj);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     }
   }
 }
