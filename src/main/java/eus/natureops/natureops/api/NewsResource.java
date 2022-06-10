@@ -2,7 +2,6 @@ package eus.natureops.natureops.api;
 
 import java.util.List;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +21,6 @@ public class NewsResource {
 
   @GetMapping("/{page}/{size}" )
   public ResponseEntity<List<News>> getAll(@PathVariable(name = "page") int page, @PathVariable(name = "size") int size ) {
-
     return  ResponseEntity.ok().body(newsService.findAll(page,size));
   }
 
