@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import eus.natureops.natureops.exceptions.UserExistsException;
+import eus.natureops.natureops.exceptions.AMQPCommunicationException;
 import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
+import eus.natureops.natureops.exceptions.SubmissionReadingException;
 
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
@@ -25,5 +27,19 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
       Exception ex) {
     return new ResponseEntity<>(
         ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
+  }
+
+  @ExceptionHandler({ AMQPCommunicationException.class })
+  public ResponseEntity<Object> handleAMQPException(
+      Exception ex) {
+    return new ResponseEntity<>(
+        ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_GATEWAY);
+  }
+
+  @ExceptionHandler({ SubmissionReadingException.class })
+  public ResponseEntity<Object> handleSubmissionException(
+      Exception ex) {
+    return new ResponseEntity<>(
+        ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
   }
 }

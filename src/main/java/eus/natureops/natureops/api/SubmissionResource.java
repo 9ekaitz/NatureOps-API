@@ -40,7 +40,7 @@ public class SubmissionResource {
   private UserService userService;
 
   @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-  public ResponseEntity<?> submitImage(HttpServletRequest request, HttpServletResponse response,
+  public ResponseEntity<String> submitImage(HttpServletRequest request, HttpServletResponse response,
       ImageSubmit imageSubmit, Authentication auth) {
     Submission submission = new Submission();
     submission.setLocation(imageSubmit.getLocation());
