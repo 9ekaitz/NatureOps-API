@@ -59,9 +59,6 @@ public class UserResource {
   @Autowired
   private UserDetailsService userDetailsService;
 
-  @Autowired
-  
-
   @GetMapping("/get")
   public ResponseEntity<UserView> get(Authentication auth) {
     return ResponseEntity.ok().body(userService.loadView(auth.getName()));
