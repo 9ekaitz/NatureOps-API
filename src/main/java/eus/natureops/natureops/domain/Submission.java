@@ -2,6 +2,7 @@ package eus.natureops.natureops.domain;
 
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,16 +27,21 @@ public class Submission {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
 
+  @Column
   private String score;
 
-  @Temporal(value=TemporalType.TIMESTAMP)
+  @Temporal(value = TemporalType.TIMESTAMP)
   @CreationTimestamp
   private Date date;
 
-  // private Place place;
   @ManyToOne
+  @EqualsAndHashCode.Exclude
   private User user;
+
+  @Column
   private String location;
+
+  @Column
   private String path;
 
   @Version

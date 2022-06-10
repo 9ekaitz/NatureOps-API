@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.domain.Submission;
+import eus.natureops.natureops.exceptions.SubmissionReadingException;
 import eus.natureops.natureops.form.ImageSubmit;
 import eus.natureops.natureops.repository.ImageRepository;
 import eus.natureops.natureops.service.SubmissionService;
@@ -50,21 +51,18 @@ public class SubmissionResource {
     try {
       path = imageRepository.save(imageSubmit.getImage(), auth.getName() + "_" +
           submission.getId());
-    } catch (IOException e1) {
-      // TODO: Custom exception
-      e1.printStackTrace();
+    } catch (IOException e) {
+      throw new SubmissionReadingException();
     }
     submission.setPath(path);
     submission = submissionService.save(submission);
     JSONObject jsonRes = null;
     try {
-
       byte[] res = (byte[]) rabbitTemplate.convertSendAndReceive("amq.topic", "rest.submission",
           imageSubmit.getImage().getBytes());
       jsonRes = new JSONObject(new String(res));
     } catch (AmqpException | IOException e) {
-      e.printStackTrace();
-      // TODO: Custom exception
+      throw new SubmissionReadingException();
     }
 
     submission.setScore(jsonRes.getString("score"));

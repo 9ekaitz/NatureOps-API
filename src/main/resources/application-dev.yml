@@ -3,7 +3,7 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/natureops
     username: root
-    password: 
+    password: $Rh*53R%G7Za^B#c
   jpa:
     hibernate: 
       ddl-auto: create
