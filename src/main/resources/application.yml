@@ -1,19 +1,25 @@
 spring:     
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/natureops
-    username: root
-    password: ENC(wLckfiOJRaeMR27l9/0Lf+zwCYrdQwYOJDIY7/uF1kPGh87t3jiZcXKl2t2HLWgUxFgG2st+1S+AHPKikGkFXg==)
+    url: jdbc:mysql://172.10.0.4:3306/natureops
+    username: natureops
+    password: ENC(ZkQProPN9E+jnhe9I/I0RJ71y1eOKm2BuiwR3jYghNfsuArlujMezdUJrPS1Tj+rQNhZcnKSadpel1urx3yqMw==)
   jpa:
     hibernate: 
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  web:
+    resources:
+      static-locations: file:../../data
       
 natureops:
   security:
     jwt:
-      secret: ENC(LIfRiysPah85khqUHZDZHralfzCH9B/2/0BEZenfMXhuw2FHucd/gUqT6gJrhJLn1V97ho9zCjroAznTb4LfVA==)
+      secret: ENC(9jm6Po+fPKbOqca0xBUw+VP5AZvzyhf2D+wkwqPewds+x2+KLJS31nibobX0hEFXbTf01fvoI4O6/ZlJKhxy3w==)
       issuer: natureops.eus
