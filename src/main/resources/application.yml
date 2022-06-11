@@ -16,8 +16,7 @@ spring:
       max-request-size: 50MB
   web:
     resources:
-      static-locations: file:../../data
-
+      static-locations: file:/usr/local/tomcat/data
   rabbitmq:
     host: 172.10.0.5 
     password: ENC(LEN22Aa3l/21VWGnJW1n5DATuqyXMn7yCcJPuyOYKzVBtWwktaPN0HWiGUAon576VgbwpmCDsI0lgv4HnA+Rl4IFxSWRvUaUGGutay55tPU=)
