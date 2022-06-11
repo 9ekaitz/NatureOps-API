@@ -42,7 +42,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
 import eus.natureops.natureops.dto.AchievementView;
-import eus.natureops.natureops.service.AchivementService;
+import eus.natureops.natureops.service.AchievementService;
 import eus.natureops.natureops.utils.FingerprintHelper;
 import eus.natureops.natureops.utils.ISystem;
 import eus.natureops.natureops.utils.JWTUtil;
@@ -58,7 +58,7 @@ class AchivementResourcesTest {
   MockMvc mvc;
 
   @MockBean
-  AchivementService achivementService;
+  AchievementService achivementService;
 
   @MockBean
   JWTUtil jwtUtil;

@@ -18,6 +18,7 @@ import eus.natureops.natureops.domain.Role;
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.UserView;
 import eus.natureops.natureops.form.UserRegistrationForm;
+import eus.natureops.natureops.repository.AchivementRepository;
 import eus.natureops.natureops.repository.RoleRepository;
 import eus.natureops.natureops.repository.UserRepository;
 import eus.natureops.natureops.service.impl.UserServiceImpl;
@@ -35,6 +36,9 @@ class UserServiceImplTest {
 
   @Mock
   private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private AchivementRepository achivementRepository;
 
   @Test
   void testRegister() {
