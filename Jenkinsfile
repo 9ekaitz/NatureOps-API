@@ -44,21 +44,21 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy') {
-        //     when {
-        //         branch 'master'
-        //     }
-        //     steps {
-        //         echo '----- Deploy app -----'
-        //         withMaven (maven: 'M3') {
-        //             withCredentials([]) {
-        //                 sh 'mvn -Dmaven.test.skip package'
-        //             }
-        //         }
-        //         script {
-        //             deploy adapters: [tomcat9(credentialsId: 'tomcat-deploy-user', path: '', url: 'https://api.natureops.eus')], contextPath: '/', onFailure: false, war: '**/*.war'
-        //         }
-        //     }
-        // }
+        stage('Deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                echo '----- Deploy app -----'
+                withMaven (maven: 'Maven') {
+                    withCredentials([]) {
+                        sh 'mvn -Dmaven.test.skip package'
+                    }
+                }
+                script {
+                    deploy adapters: [tomcat9(credentialsId: 'tomcat-deploy-user', path: '', url: 'http://10.8.0.1:8080')], contextPath: '/', onFailure: false, war: '**/*.war'
+                }
+            }
+        }
     }
 }

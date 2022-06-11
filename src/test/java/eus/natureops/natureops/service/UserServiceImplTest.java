@@ -1,13 +1,17 @@
 package eus.natureops.natureops.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import eus.natureops.natureops.domain.Role;
@@ -73,4 +77,23 @@ class UserServiceImplTest {
 
     assertEquals(userView, userServiceImpl.loadView("dummy"));
   }
+
+  @Test
+  void testDisableUser() {
+    User user = new User(1L, "dummy", "password", "name", "email", true, null, 1);
+    
+    when(userRepository.save(any(User.class))).thenAnswer(new Answer<User>() {
+
+      @Override
+      public User answer(InvocationOnMock invocation) throws Throwable {
+        return invocation.getArgument(0);
+      }
+    });
+
+    User disabledUser = userServiceImpl.disable(user);
+    assertFalse(disabledUser.isEnabled());
+    assertEquals("1_dummy", disabledUser.getUsername());
+  }
+
+
 }

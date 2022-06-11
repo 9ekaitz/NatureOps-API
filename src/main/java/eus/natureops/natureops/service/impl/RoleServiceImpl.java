@@ -1,7 +1,5 @@
 package eus.natureops.natureops.service.impl;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,14 +8,14 @@ import eus.natureops.natureops.repository.RoleRepository;
 import eus.natureops.natureops.service.RoleService;
 
 @Service
-public class RoleServiceImpl implements RoleService{
+public class RoleServiceImpl implements RoleService {
 
   @Autowired
   RoleRepository roleRepository;
 
   @Override
   public Role save(Role role) {
-    return  roleRepository.save(role);
+    return roleRepository.save(role);
   }
 
   @Override
@@ -26,15 +24,8 @@ public class RoleServiceImpl implements RoleService{
   }
 
   @Override
-  public List<Role> findAll() {
-    // TODO Auto-generated method stub
-    return null;
+  public Role findById(Long roleId) {
+    return roleRepository.findById(roleId).orElse(null);
   }
 
-  @Override
-  public Role findById(Long roleId) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-  
 }

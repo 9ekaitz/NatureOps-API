@@ -7,37 +7,33 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Version;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Generated;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Generated
-@AllArgsConstructor
-@NoArgsConstructor
-public class News {
+public class Achievement {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
-
-  @Column(nullable = false)
-  private String title;
+  private long id;
 
   @Column
-  private String subtitle;
-
-  @Column
-  private String content;
+  private String desription;
 
   @Column
   private String image;
 
   @Column
+  private String objetivo;
+
+  @Column
   private boolean enabled;
+
+  @Column
+  private int objetivoMax;
 
   @Version
   @EqualsAndHashCode.Exclude
