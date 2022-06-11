@@ -17,11 +17,11 @@ import eus.natureops.natureops.service.AchievementService;
 import eus.natureops.natureops.service.UserService;
 
 @Service
-public class AchievementServiceImp implements AchievementService{
+public class AchievementServiceImp implements AchievementService {
 
     @Autowired
     AchivementRepository achievementRepository;
-    
+
     @Autowired
     AchievementsUserRepository achievementsUserRepository;
 
@@ -30,8 +30,9 @@ public class AchievementServiceImp implements AchievementService{
 
     @Override
     public List<AchievementView> getPage(int page, int numOfNews, String username) {
-        Pageable sortedById = PageRequest.of(page,numOfNews, Sort.by("id").descending());
+        Pageable sortedById = PageRequest.of(page, numOfNews, Sort.by("id").descending());
         User user = userService.findByUsername(username);
+
         return achievementsUserRepository.findByUser(user, sortedById, AchievementView.class).toList();
     }
 
@@ -44,6 +45,5 @@ public class AchievementServiceImp implements AchievementService{
     public List<Achievement> getAll() {
         return achievementRepository.findAll();
     }
-    
-    
+
 }
