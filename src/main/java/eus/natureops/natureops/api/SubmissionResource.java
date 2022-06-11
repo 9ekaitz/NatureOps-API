@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.domain.Submission;
+import eus.natureops.natureops.exceptions.AMQPCommunicationException;
 import eus.natureops.natureops.exceptions.SubmissionReadingException;
 import eus.natureops.natureops.form.ImageSubmit;
 import eus.natureops.natureops.repository.ImageRepository;
@@ -62,7 +63,7 @@ public class SubmissionResource {
           imageSubmit.getImage().getBytes());
       jsonRes = new JSONObject(new String(res));
     } catch (AmqpException | IOException e) {
-      throw new SubmissionReadingException();
+      throw new AMQPCommunicationException();
     }
 
     submission.setScore(jsonRes.getString("score"));
