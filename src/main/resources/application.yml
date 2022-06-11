@@ -20,7 +20,7 @@ spring:
 
   rabbitmq:
     host: 172.10.0.5 
-    password: ENC(h94uh2ex50TJB1K3wy/Q0/l30/FM+/XjfxN1yMu+2+ZyzN9uTigdOern3/H2ohr8rFiaJBL25D7WknQ+tQuxhUIzgY+XNxrqHU9HYFjyu7E=)
+    password: ENC(LEN22Aa3l/21VWGnJW1n5DATuqyXMn7yCcJPuyOYKzVBtWwktaPN0HWiGUAon576VgbwpmCDsI0lgv4HnA+Rl4IFxSWRvUaUGGutay55tPU=)
     port: 5672 
     username: beluga 
 natureops:
