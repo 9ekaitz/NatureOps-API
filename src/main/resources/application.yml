@@ -17,7 +17,12 @@ spring:
   web:
     resources:
       static-locations: file:../../data
-      
+
+  rabbitmq:
+    host: 172.10.0.5 
+    password: ENC(h94uh2ex50TJB1K3wy/Q0/l30/FM+/XjfxN1yMu+2+ZyzN9uTigdOern3/H2ohr8rFiaJBL25D7WknQ+tQuxhUIzgY+XNxrqHU9HYFjyu7E=)
+    port: 5672 
+    username: beluga 
 natureops:
   security:
     jwt:
