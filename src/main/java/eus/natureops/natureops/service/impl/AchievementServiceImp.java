@@ -8,15 +8,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import eus.natureops.natureops.domain.Achievement;
 import eus.natureops.natureops.domain.User;
 import eus.natureops.natureops.dto.AchievementView;
 import eus.natureops.natureops.repository.AchievementsUserRepository;
 import eus.natureops.natureops.repository.AchivementRepository;
-import eus.natureops.natureops.service.AchivementService;
+import eus.natureops.natureops.service.AchievementService;
 import eus.natureops.natureops.service.UserService;
 
 @Service
-public class AchievementServiceImp implements AchivementService{
+public class AchievementServiceImp implements AchievementService{
 
     @Autowired
     AchivementRepository achievementRepository;
@@ -38,5 +39,11 @@ public class AchievementServiceImp implements AchivementService{
     public int achievementsSize() {
         return achievementRepository.findByEnabledTrue().size();
     }
+
+    @Override
+    public List<Achievement> getAll() {
+        return achievementRepository.findAll();
+    }
+    
     
 }

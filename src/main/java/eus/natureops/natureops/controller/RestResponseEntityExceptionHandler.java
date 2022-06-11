@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import eus.natureops.natureops.exceptions.UserExistsException;
 import eus.natureops.natureops.exceptions.AMQPCommunicationException;
+import eus.natureops.natureops.exceptions.AchievementBindingException;
 import eus.natureops.natureops.exceptions.RefreshTokenMissingException;
 import eus.natureops.natureops.exceptions.SubmissionReadingException;
 
@@ -34,6 +35,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
       Exception ex) {
     return new ResponseEntity<>(
         ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_GATEWAY);
+  }
+
+  @ExceptionHandler({ AchievementBindingException.class })
+  public ResponseEntity<Object> handleInternalError(
+      Exception ex) {
+    return new ResponseEntity<>(
+        ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler({ SubmissionReadingException.class })

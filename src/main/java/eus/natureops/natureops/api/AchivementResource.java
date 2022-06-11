@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.dto.AchievementView;
-import eus.natureops.natureops.service.AchivementService;
+import eus.natureops.natureops.service.AchievementService;
 
 @RestController
 @RequestMapping("/api")
 public class AchivementResource {
   
   @Autowired
-  private AchivementService achivementService;
+  private AchievementService achivementService;
 
   @GetMapping("/achivements/{page}/{size}")
   public  ResponseEntity<List<AchievementView>> getAll(@PathVariable(name = "page") int page, @PathVariable(name = "size") int size, Authentication auth) {

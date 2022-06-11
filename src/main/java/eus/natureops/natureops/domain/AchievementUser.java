@@ -21,7 +21,7 @@ public class AchievementUser {
 
   @ManyToOne
   @MapsId("achivementId")
-  @JoinColumn(name = "achivement_id")
+  @JoinColumn(name = "achievement_id")
   private Achievement achievement;
 
   @ManyToOne
