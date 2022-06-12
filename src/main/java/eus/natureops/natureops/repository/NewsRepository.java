@@ -12,6 +12,5 @@ import eus.natureops.natureops.domain.News;
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
   public Page<News> findByEnabledTrue(Pageable pageable);
-
   public List<News> findByEnabledTrue();
 }

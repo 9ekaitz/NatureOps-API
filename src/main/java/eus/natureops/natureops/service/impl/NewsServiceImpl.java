@@ -28,4 +28,9 @@ public class NewsServiceImpl implements NewsService {
     public int getNewsSize() {
         return newsRepository.findByEnabledTrue().size();
     }
+
+    @Override
+    public void createNews(News news) {
+       newsRepository.save(news);
+    }
 }
