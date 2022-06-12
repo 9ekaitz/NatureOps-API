@@ -33,8 +33,8 @@ class NewsServiceImplTest {
     @Test
     void testFindAll() {
         List<News> lista = new ArrayList<>();
-        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true, 0);
-        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true, 0);
+        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1","google.com", true, 0);
+        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", "google.com",true, 0);
         lista.add(noticia1);
         lista.add(noticia2);
 
@@ -47,13 +47,19 @@ class NewsServiceImplTest {
     @Test
     void testNewsSize() {
         List<News> lista = new ArrayList<>();
-        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1", true, 0);
-        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2", true, 0);
+        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1","google.com", true, 0);
+        News noticia2 = new News(1, "titulo2", "subtitulo2", "content2", "image2","google.com", true, 0);
         lista.add(noticia1);
         lista.add(noticia2);
 
         when(newsRepository.findByEnabledTrue()).thenReturn(lista);
         assertEquals(2, newsServiceImpl.getNewsSize());
+    }
+
+    @Test
+    void testCreteNews() {
+        News noticia1 = new News(0, "titulo1", "subtitulo1", "content1", "image1","google.com", true, 0);
+        newsRepository.save(noticia1);
     }
 
 }

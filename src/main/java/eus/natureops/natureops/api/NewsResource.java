@@ -43,6 +43,7 @@ public class NewsResource {
       news.setSubtitle((String)payload.get("subtitle"));
       news.setContent((String)payload.get("content"));
       news.setImage((String)payload.get("image"));
+      news.setUrl((String)payload.get("url"));
       news.setEnabled(true);
       news.setVersion(1);
       newsService.createNews(news);

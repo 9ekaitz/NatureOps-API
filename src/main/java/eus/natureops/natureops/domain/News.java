@@ -37,6 +37,9 @@ public class News {
   private String image;
 
   @Column
+  private String url;
+
+  @Column
   private boolean enabled;
 
   @Version
