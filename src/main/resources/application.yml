@@ -22,6 +22,9 @@ spring:
     password: ENC(LEN22Aa3l/21VWGnJW1n5DATuqyXMn7yCcJPuyOYKzVBtWwktaPN0HWiGUAon576VgbwpmCDsI0lgv4HnA+Rl4IFxSWRvUaUGGutay55tPU=)
     port: 5672 
     username: beluga 
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 natureops:
   security:
     jwt:
