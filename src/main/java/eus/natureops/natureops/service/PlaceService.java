@@ -7,7 +7,7 @@ import eus.natureops.natureops.domain.Place;
 public interface PlaceService {
   public Place save(Place place);
 
-  public List<Place> findAll();
+  public List<Place> getAll();
 
   public Place findById(Long id);
 }
