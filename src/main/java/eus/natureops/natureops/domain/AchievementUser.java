@@ -20,7 +20,7 @@ public class AchievementUser {
   private AchievementUserKey id;
 
   @ManyToOne
-  @MapsId("achivementId")
+  @MapsId("achievementId")
   @JoinColumn(name = "achievement_id")
   private Achievement achievement;
 
