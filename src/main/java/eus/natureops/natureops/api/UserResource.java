@@ -108,7 +108,6 @@ public class UserResource {
 
     Cookie cookie = new Cookie("Fgp", fingerprint);
     cookie.setHttpOnly(true);
-    cookie.setSecure(true);
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.addCookie(cookie);
