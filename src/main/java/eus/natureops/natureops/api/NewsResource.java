@@ -1,8 +1,6 @@
 package eus.natureops.natureops.api;
 
-import java.io.Console;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import eus.natureops.natureops.domain.News;
+import eus.natureops.natureops.form.NewsForm;
 import eus.natureops.natureops.service.NewsService;
 
 @RestController
@@ -23,31 +22,28 @@ public class NewsResource {
   @Autowired
   private NewsService newsService;
 
-  @GetMapping("/{page}/{size}" )
-  public ResponseEntity<List<News>> getAll(@PathVariable(name = "page") int page, @PathVariable(name = "size") int size ) {
-    return  ResponseEntity.ok().body(newsService.findAll(page,size));
+  @GetMapping("/{page}/{size}")
+  public ResponseEntity<List<News>> getAll(@PathVariable(name = "page") int page,
+      @PathVariable(name = "size") int size) {
+    return ResponseEntity.ok().body(newsService.findAll(page, size));
   }
 
-
-  @GetMapping("/size" )
+  @GetMapping("/size")
   public ResponseEntity<Integer> getSize() {
-    return  ResponseEntity.ok().body(newsService.getNewsSize());
+    return ResponseEntity.ok().body(newsService.getNewsSize());
   }
 
-  @PostMapping("/save" )
-  public ResponseEntity<Integer> saveNews(@RequestBody News news) {
-
+  @PostMapping("/save")
+  public ResponseEntity<Object> saveNews(@RequestBody NewsForm newsForm) {
 
     try {
-     
-      newsService.createNews(news);
+
+      newsService.createNews(newsForm);
 
     } catch (Exception e) {
-      System.out.println(e);
-      return  ResponseEntity.unprocessableEntity().body(0);
+      return ResponseEntity.unprocessableEntity().body(0);
     }
-    return  ResponseEntity.ok().body(1);
+    return ResponseEntity.ok().body(1);
   }
-
 
 }
