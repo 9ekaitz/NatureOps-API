@@ -25,6 +25,11 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+server:
+  error:
+    page: error
+    path: /error
+    include-mapping: always
 natureops:
   security:
     jwt:
